@@ -12,6 +12,7 @@ type Packet struct {
 type ProxyClientSturct struct{
 	Conn net.Conn
 	Remote net.Conn
+	RemoteRealAddr string
 	ProxyUser net.Conn
 	ProxyBrideChan chan Packet
 	ProxyRecvChan chan Packet
@@ -19,4 +20,5 @@ type ProxyClientSturct struct{
 	IsConnected bool
 	AESKey []byte
 	Locker sync.Mutex
+
 }

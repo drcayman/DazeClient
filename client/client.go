@@ -1,7 +1,7 @@
 package client
 
 import (
-	"fmt"
+	"DazeClient/mylog"
 	"DazeClient/util"
 	"errors"
 	"encoding/binary"
@@ -120,7 +120,7 @@ func ReadFromServerThread(ProxyClient *common.ProxyClientSturct,PacketChan chan 
 		}
 		command, data, DePacketErr := DePacket(buf)
 		if DePacketErr != nil {
-			fmt.Println("解码错误",DePacketErr.Error())
+			mylog.DPrintln("解码错误",DePacketErr.Error())
 			return
 		}
 		PacketChan <- common.Packet{Command: command, Data: data}
@@ -141,13 +141,14 @@ func ServeCommand(ProxyClient *common.ProxyClientSturct,PacketChan chan common.P
 			SendPacketToServer(ProxyClient,MakePacket(command,[]byte(address)))
 		case 0xC1:
 			ProxyClient.IsConnected=true
+			ProxyClient.RemoteRealAddr=util.B2s(packet.Data)
 			//fmt.Println("远程连接成功了哦")
 			ProxyClient.Locker.Unlock()
 		case 0xE1:
-			fmt.Println(address,"远程无法解析")
+			mylog.DPrintln(address,"远程无法解析")
 			return
 		case 0xE2:
-			fmt.Println(address,"连接失败")
+			mylog.DPrintln(address,"连接失败")
 			return
 		}
 	}
@@ -155,7 +156,7 @@ func ServeCommand(ProxyClient *common.ProxyClientSturct,PacketChan chan common.P
 func NewTCPProxyConn(address string,ProxyUser net.Conn) (*common.ProxyClientSturct,error){
 	ServerConn,err:=net.Dial("tcp",config.GetServerIP())
 	if err!=nil{
-		fmt.Println("代理服务器",config.GetServerIP(),"连接建立失败！！！")
+		mylog.DPrintln("代理服务器",config.GetServerIP(),"连接建立失败！！！")
 		return nil,err
 	}
 	PacketChan:=make(chan common.Packet,10)

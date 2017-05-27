@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	"bufio"
@@ -10,6 +9,7 @@ import (
 	common "DazeClient/mystruct"
 	"bytes"
 	"DazeClient/client"
+	"DazeClient/mylog"
 )
 
 func SendPacketToProxyUser(ProxyUser net.Conn,data []byte){
@@ -59,7 +59,7 @@ func LocalHttpsProxyHandle(ProxyUser net.Conn){
 		if strings.Index(address,":") ==-1{
 			address+=":80"
 		}
-		fmt.Println("建立连接到",address)
+		mylog.DPrintln("建立连接到",address)
 		ProxyClientGlobatmp,newErr:=client.NewTCPProxyConn(address,ProxyUser)
 		if newErr!=nil{
 			return
@@ -82,12 +82,13 @@ func LocalHttpsProxyHandle(ProxyUser net.Conn){
 
 	}
 }
-func StartHttpsProxy(){
-	l,ListenErr:=net.Listen("tcp",":10800")
+func StartHttpsProxy(address string){
+	l,ListenErr:=net.Listen("tcp",address)
 	if ListenErr!=nil{
-		fmt.Println(ListenErr.Error())
+		mylog.DPrintln(ListenErr.Error())
 		os.Exit(-1)
 	}
+	mylog.Println("https proxy listening at ",address)
 	for {
 		conn,_:=l.Accept()
 		go LocalHttpsProxyHandle(conn)
