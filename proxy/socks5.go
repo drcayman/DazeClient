@@ -27,34 +27,6 @@ func packNetAddr(addr string, buf []byte) {
 	buf[5] = byte(port % 256)
 }
 
-func isUseOfClosedConn(err error) bool {
-	operr, ok := err.(*net.OpError)
-	return ok && operr.Err.Error() == "use of closed network connection"
-}
-
-func iobridge(src io.Reader, dst io.Writer, shutdown chan bool) {
-	defer func() {
-		shutdown <- true
-	}()
-
-	buf := make([]byte, 8192)
-	for {
-		n, err := src.Read(buf)
-		if err != nil {
-			if !(err == io.EOF || isUseOfClosedConn(err)) {
-				mylog.DPrintln("error reading", src, err)
-			}
-			break
-		}
-
-		_, err = dst.Write(buf[:n])
-		if err != nil {
-			mylog.DPrintln("error writing", src, err)
-			break
-		}
-	}
-}
-
 // Read a specified number of bytes.
 func readBytes(conn io.Reader, count int) (buf []byte) {
 	buf = make([]byte, count)
@@ -84,7 +56,6 @@ func performConnect(backend string, frontconn net.Conn) {
 		frontconn.Write(errorReplyConnect(0x05))
 		return
 	}
-	ProxyClient.Locker.Lock()
 	backaddr := ProxyClient.RemoteRealAddr
 	mylog.DPrintln("CONNECTED backend", backaddr)
 	defer func() {
@@ -97,7 +68,6 @@ func performConnect(backend string, frontconn net.Conn) {
 	copy(buf, []byte{0x05, 0x00, 0x00, 0x01})
 	packNetAddr(ProxyClient.RemoteRealAddr, buf[4:])
 	frontconn.Write(buf)
-
 	//// bridge connection
 	//shutdown := make(chan bool, 2)
 	//go iobridge(frontconn, backconn, shutdown)
@@ -105,33 +75,33 @@ func performConnect(backend string, frontconn net.Conn) {
 	//
 	//// wait for either side to close
 	//<-shutdown
-	go HandleSend(ProxyClient)
-	SocksBridge(ProxyClient)
+	go SocksBridgeRemoteToProxy(ProxyClient)
+	SocksBridgeProxyToRemote(ProxyClient)
 }
-func SocksBridge(ProxyClient *common.ProxyClientSturct){
-	for packet:=range ProxyClient.ProxyBrideChan{
-		//0代表代理发送给远端
-		//1代表远端发送给代理
-		switch packet.Command{
-		case 0:client.SendPacketToServer(ProxyClient,packet.Data)
-		case 1://ProxyClient.ProxyRecvChan<-packet
-			ProxyClient.ProxyUser.Write(packet.Data)
+func SocksBridgeRemoteToProxy(ProxyClient *common.ProxyClientSturct){
+	for{
+		buf,err:=client.ReadFromServer(ProxyClient)
+		if err!=nil{
+			goto quit
 		}
+		ProxyClient.ProxyUser.Write(buf)
 	}
+quit:
+	ProxyClient.ProxyUser.Close()
+	ProxyClient.Remote.Close()
 }
-func HandleSend(ProxyClient *common.ProxyClientSturct){
-	defer func(){
-		close(ProxyClient.ProxyBrideChan)
-	}()
-	buf:=make([]byte,65536)
+func SocksBridgeProxyToRemote(ProxyClient *common.ProxyClientSturct){
+	buf:=make([]byte,10240)
 	for{
 		n,err:=ProxyClient.ProxyUser.Read(buf)
 		if err!=nil{
-			ProxyClient.Remote.Close()
-			return
+			goto quit
 		}
-		ProxyClient.ProxyBrideChan<-common.Packet{Command:0,Data:buf[:n]}
+		client.SendPacketToServer(ProxyClient,buf[:n])
 	}
+quit:
+	ProxyClient.ProxyUser.Close()
+	ProxyClient.Remote.Close()
 }
 func handleConnection(frontconn net.Conn) {
 	frontaddr := frontconn.RemoteAddr().String()
@@ -202,7 +172,6 @@ func handleConnection(frontconn net.Conn) {
 		backend = fmt.Sprintf("%s:%d", buf5[0:nmlen],
 			int(buf5[nmlen]) * 256 + int(buf5[nmlen+1]))
 	}
-
 	performConnect(backend, frontconn)
 }
 

@@ -15,41 +15,27 @@ import (
 func SendPacketToProxyUser(ProxyUser net.Conn,data []byte){
 	ProxyUser.Write(data)
 }
-func LocalHttpsProxyHandle(ProxyUser net.Conn){
-	var ProxyClientGloba *common.ProxyClientSturct
-	defer func(){
-		ProxyUser.Close()
-		if ProxyClientGloba!=nil{
-			ProxyClientGloba.Remote.Close()
-			close(ProxyClientGloba.ProxyBrideChan)
-		}
-	}()
-	IsConnected:=false
-	P:=""
-	defer func(){
-		ProxyUser.Close()
-	}()
-	buf:=make([]byte,5000)
-	for{
-		n,ReadErr:=ProxyUser.Read(buf)
-		if ReadErr!=nil{
-			return
-		}
-		if IsConnected{
-			if P=="http"{
-				r:=bufio.NewReader(bytes.NewReader(buf[:n]))
-				_,ReadRequestErr:=http.ReadRequest(r)
-				if ReadRequestErr==nil{
-					goto reconnect
-				}
+func LocalHttpsProxyHandle(ProxyUser net.Conn,preBuf []byte){
+		flag:=0
+		n:=0
+		var buf []byte
+		defer func() {
+			if flag==0{
+				ProxyUser.Close()
 			}
-			//fmt.Println("浏览器准备发送",len(buf[:n]))
-			//(*RemoteConn).Write(buf[:n])
-			//client.SendPacketToServer(ProxyClientGloba,buf[:n])
-			ProxyClientGloba.ProxyBrideChan<-common.Packet{Command:0,Data:buf[:n]}
-			continue
+		}()
+		if preBuf!=nil{
+			buf=preBuf
+			n=len(preBuf)
+		}else{
+			newbuf:=make([]byte,10240)
+			newlen,ReadErr:=ProxyUser.Read(newbuf)
+			if ReadErr!=nil{
+				return
+			}
+			buf=newbuf
+			n=newlen
 		}
-	reconnect:
 		r:=bufio.NewReader(bytes.NewReader(buf[:n]))
 		rq,ReadRequestErr:=http.ReadRequest(r)
 		if ReadRequestErr!=nil{
@@ -60,27 +46,23 @@ func LocalHttpsProxyHandle(ProxyUser net.Conn){
 			address+=":80"
 		}
 		mylog.DPrintln("建立连接到",address)
-		ProxyClientGlobatmp,newErr:=client.NewTCPProxyConn(address,ProxyUser)
+		ProxyClient,newErr:=client.NewTCPProxyConn(address,ProxyUser)
 		if newErr!=nil{
 			return
 		}
-		ProxyClientGlobatmp.Locker.Lock()
-		ProxyClientGloba=ProxyClientGlobatmp
-		//go ProxyRemoteHandle(proxyRecv,c)
-		go HTTPSBridge(ProxyClientGloba)
 		if rq.Method=="CONNECT"{
 			//proxyRecv<-[]byte("HTTP/1.1 200 Connection Established\r\n\r\n")
 			SendPacketToProxyUser(ProxyUser,[]byte("HTTP/1.1 200 Connection Established\r\n\r\n"))
-			P="https"
+			ProxyClient.Protocol="https"
 		}
 		if rq.Method!="CONNECT"{
 			newbuf:=bytes.Replace(buf[:n],[]byte(" http://"+rq.Host),[]byte(" "),1)
-			P="http"
-			client.SendPacketToServer(ProxyClientGloba,newbuf)
+			ProxyClient.Protocol="http"
+			client.SendPacketToServer(ProxyClient,newbuf)
 		}
-		IsConnected=true
-
-	}
+		go HTTPSBridgeProxyToRemote(ProxyClient)
+		go HTTPSBridgeRemoteToProxy(ProxyClient)
+		flag=1
 }
 func StartHttpsProxy(address string){
 	l,ListenErr:=net.Listen("tcp",address)
@@ -91,17 +73,42 @@ func StartHttpsProxy(address string){
 	mylog.Println("https proxy listening at ",address)
 	for {
 		conn,_:=l.Accept()
-		go LocalHttpsProxyHandle(conn)
+		go LocalHttpsProxyHandle(conn,nil)
 	}
 }
-func HTTPSBridge(ProxyClient *common.ProxyClientSturct){
-	for packet:=range ProxyClient.ProxyBrideChan{
-		//0代表代理发送给远端
-		//1代表远端发送给代理
-		switch packet.Command{
-		case 0:client.SendPacketToServer(ProxyClient,packet.Data)
-		case 1://ProxyClient.ProxyRecvChan<-packet
-			ProxyClient.ProxyUser.Write(packet.Data)
+func HTTPSBridgeRemoteToProxy(ProxyClient *common.ProxyClientSturct){
+	for {
+		buf,err:=client.ReadFromServer(ProxyClient)
+		if err!=nil{
+			goto quit
 		}
+		ProxyClient.ProxyUser.Write(buf)
 	}
+quit:
+	ProxyClient.ProxyUser.Close()
+	ProxyClient.Remote.Close()
+
+}
+
+func HTTPSBridgeProxyToRemote(ProxyClient *common.ProxyClientSturct){
+	buf:=make([]byte,65536)
+	for {
+		n,err:=ProxyClient.ProxyUser.Read(buf)
+		if err!=nil{
+			goto quit
+		}
+		if ProxyClient.Protocol=="http" {
+			r:=bufio.NewReader(bytes.NewReader(buf[:n]))
+			_,ReadRequestErr:=http.ReadRequest(r)
+			if ReadRequestErr==nil{
+				go LocalHttpsProxyHandle(ProxyClient.ProxyUser,buf[:n])
+				return
+			}
+		}
+		client.SendPacketToServer(ProxyClient,buf[:n])
+	}
+	quit:
+		ProxyClient.ProxyUser.Close()
+		ProxyClient.Remote.Close()
+
 }

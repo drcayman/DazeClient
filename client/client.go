@@ -93,88 +93,68 @@ func SendPacketToServer(ProxyClient *common.ProxyClientSturct,data []byte) (int,
 	bufffer=bytes.NewBuffer(header)
 	bufffer.Write(data)
 	n,err:=ProxyClient.Remote.Write(bufffer.Bytes())
-	//fmt.Println("一共发送了",n)
-
 	return n,err
 }
-func ReadFromServerThread(ProxyClient *common.ProxyClientSturct,PacketChan chan common.Packet){
+func CallProxyServer(ProxyClient *common.ProxyClientSturct) (error) {
 	defer func(){
-		close(PacketChan)
-		ProxyClient.Remote.Close()
-		ProxyClient.ProxyUser.Close()
+		if !ProxyClient.IsConnected{
+			ProxyClient.Remote.Close()
+		}
 	}()
 	for {
 		buf, ReadErr := ReadFromServer(ProxyClient)
 		if ReadErr != nil {
 			//fmt.Println("读取错误,连接断开")
-			return
+			return errors.New("conn proxy server error")
 		}
 		if ProxyClient.IsKeyExchange == false {
 			KeyExchange(ProxyClient,buf)
 			continue
 		}
-		if ProxyClient.IsConnected{
-			//ProxyClient.ProxyUser.Write(buf)
-			ProxyClient.ProxyBrideChan<-common.Packet{Command:1,Data:buf}
-			continue
-		}
 		command, data, DePacketErr := DePacket(buf)
 		if DePacketErr != nil {
 			mylog.DPrintln("解码错误",DePacketErr.Error())
-			return
+			return errors.New("decode error")
 		}
-		PacketChan <- common.Packet{Command: command, Data: data}
-	}
-}
-func ServeCommand(ProxyClient *common.ProxyClientSturct,PacketChan chan common.Packet,address string,IsUDP bool){
-	defer func(){
-		ProxyClient.Remote.Close()
-	}()
-	for packet:=range PacketChan{
-		switch packet.Command {
+		switch command {
 		case 0x04:
 			//fmt.Println("key交换成功")
 			command:=byte(0xA1)
-			if IsUDP{
+			if ProxyClient.IsUDP{
 				command=byte(0xA2)
 			}
-			SendPacketToServer(ProxyClient,MakePacket(command,[]byte(address)))
+			SendPacketToServer(ProxyClient,MakePacket(command,[]byte(ProxyClient.Address)))
 		case 0xC1:
 			ProxyClient.IsConnected=true
-			ProxyClient.RemoteRealAddr=util.B2s(packet.Data)
-			//fmt.Println("远程连接成功了哦")
-			ProxyClient.Locker.Unlock()
+			ProxyClient.RemoteRealAddr=util.B2s(data)
+			return nil
 		case 0xE1:
-			mylog.DPrintln(address,"远程无法解析")
-			return
+			mylog.DPrintln(ProxyClient.Address,"远程无法解析")
+			return errors.New("ip error")
 		case 0xE2:
-			mylog.DPrintln(address,"连接失败")
-			return
+			mylog.DPrintln(ProxyClient.Address,"连接失败")
+			return errors.New("conn remote error")
 		}
 	}
 }
+
 func NewTCPProxyConn(address string,ProxyUser net.Conn) (*common.ProxyClientSturct,error){
 	ServerConn,err:=net.Dial("tcp",config.GetServerIP())
 	if err!=nil{
 		mylog.DPrintln("代理服务器",config.GetServerIP(),"连接建立失败！！！")
 		return nil,err
 	}
-	PacketChan:=make(chan common.Packet,10)
-	ProxyClient:=common.ProxyClientSturct{Remote:ServerConn,ProxyUser:ProxyUser,ProxyBrideChan:make(chan common.Packet,10)}
-	ProxyClient.Locker.Lock()
-	go ReadFromServerThread(&ProxyClient,PacketChan)
-	go ServeCommand(&ProxyClient,PacketChan,address,false)
-	return &ProxyClient,nil
+	ProxyClient:=common.ProxyClientSturct{Remote:ServerConn,ProxyUser:ProxyUser,Address:address}
+	CallProxyServerErr:=CallProxyServer(&ProxyClient)
+	return &ProxyClient,CallProxyServerErr
 }
 func NewUDPProxyConn(address string,ProxyUser net.Conn) (*common.ProxyClientSturct,error){
 	ServerConn,err:=net.Dial("tcp",config.GetServerIP())
 	if err!=nil{
+		mylog.DPrintln("代理服务器",config.GetServerIP(),"连接建立失败！！！")
 		return nil,err
 	}
-	PacketChan:=make(chan common.Packet,10)
-	ProxyClient:=common.ProxyClientSturct{Remote:ServerConn,ProxyUser:ProxyUser,ProxyBrideChan:make(chan common.Packet,10)}
-	ProxyClient.Locker.Lock()
-	go ReadFromServerThread(&ProxyClient,PacketChan)
-	go ServeCommand(&ProxyClient,PacketChan,address,true)
-	return &ProxyClient,nil
+	ProxyClient:=common.ProxyClientSturct{Remote:ServerConn,ProxyUser:ProxyUser,Address:address,IsUDP:true}
+	CallProxyServerErr:=CallProxyServer(&ProxyClient)
+	return &ProxyClient,CallProxyServerErr
 }
