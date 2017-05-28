@@ -51,6 +51,7 @@ func ReadFromServer(ProxyClient *common.ProxyClientSturct) ([]byte,error){
 	header:=headerbuf[:4]
 	headerDecode,_:=util.DecryptAES(header,AESKey)
 	if headerDecode[0]!=0xFB || headerDecode[3]!=0xFC{
+		mylog.DPrintln("服务器返回的数据不能识别，可能是预共享密钥有误？")
 		return nil,errors.New("deheader error")
 	}
 	buflen:=int(headerDecode[1])+int(headerDecode[2])*256
@@ -127,6 +128,7 @@ func CallProxyServer(ProxyClient *common.ProxyClientSturct) (error) {
 		case 0xC1:
 			ProxyClient.IsConnected=true
 			ProxyClient.RemoteRealAddr=util.B2s(data)
+			mylog.DPrintln(ProxyClient.Address,"代理连接建立成功")
 			return nil
 		case 0xE1:
 			mylog.DPrintln(ProxyClient.Address,"远程无法解析")
@@ -141,7 +143,7 @@ func CallProxyServer(ProxyClient *common.ProxyClientSturct) (error) {
 func NewTCPProxyConn(address string,ProxyUser net.Conn) (*common.ProxyClientSturct,error){
 	ServerConn,err:=net.Dial("tcp",config.GetServerIP())
 	if err!=nil{
-		mylog.DPrintln("代理服务器",config.GetServerIP(),"连接建立失败！！！")
+		mylog.DPrintln("代理服务器",config.GetServerIP(),"连接失败！！！")
 		return nil,err
 	}
 	ProxyClient:=common.ProxyClientSturct{Remote:ServerConn,ProxyUser:ProxyUser,Address:address}
@@ -151,7 +153,7 @@ func NewTCPProxyConn(address string,ProxyUser net.Conn) (*common.ProxyClientStur
 func NewUDPProxyConn(address string,ProxyUser net.Conn) (*common.ProxyClientSturct,error){
 	ServerConn,err:=net.Dial("tcp",config.GetServerIP())
 	if err!=nil{
-		mylog.DPrintln("代理服务器",config.GetServerIP(),"连接建立失败！！！")
+		mylog.DPrintln("代理服务器",config.GetServerIP(),"连接失败！！！")
 		return nil,err
 	}
 	ProxyClient:=common.ProxyClientSturct{Remote:ServerConn,ProxyUser:ProxyUser,Address:address,IsUDP:true}

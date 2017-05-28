@@ -45,7 +45,7 @@ func LocalHttpsProxyHandle(ProxyUser net.Conn,preBuf []byte){
 		if strings.Index(address,":") ==-1{
 			address+=":80"
 		}
-		mylog.DPrintln("建立连接到",address)
+		mylog.DPrintln("建立代理连接到",address)
 		ProxyClient,newErr:=client.NewTCPProxyConn(address,ProxyUser)
 		if newErr!=nil{
 			return

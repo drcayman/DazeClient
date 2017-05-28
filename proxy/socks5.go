@@ -105,13 +105,13 @@ quit:
 }
 func handleConnection(frontconn net.Conn) {
 	frontaddr := frontconn.RemoteAddr().String()
-	mylog.DPrintln("ACCEPTED frontend", frontconn, frontaddr)
+	mylog.DPrintln("ACCEPTED frontend",  frontaddr)
 	defer func() {
 		if err := recover(); err != nil {
-			mylog.DPrintln("ERROR frontend", frontconn, frontaddr, err)
+			mylog.DPrintln("ERROR frontend", frontaddr, err)
 		}
 		frontconn.Close()
-		mylog.DPrintln("DISCONNECTED frontend", frontconn, frontaddr)
+		mylog.DPrintln("DISCONNECTED frontend",  frontaddr)
 	}()
 
 	// receive auth packet
