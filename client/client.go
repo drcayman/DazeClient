@@ -71,8 +71,11 @@ func ReadFromServer(ProxyClient *common.ProxyClientSturct) ([]byte,error){
 			break
 		}
 	}
-	buf,_=util.DecryptAES(buf,AESKey)
-	return buf,nil
+	xbuf:=make([]byte,len(buf)+4)
+	copy(xbuf,header)
+	copy(xbuf[4:],buf)
+	xbuf,_=util.DecryptAES(xbuf,AESKey)
+	return xbuf[4:],nil
 }
 func KeyExchange(ProxyClient *common.ProxyClientSturct,PublicKeyDer []byte){
 	NewAESKey:=util.GenAESKey(32)
@@ -81,19 +84,16 @@ func KeyExchange(ProxyClient *common.ProxyClientSturct,PublicKeyDer []byte){
 	ProxyClient.IsKeyExchange=true
 }
 func SendPacketToServer(ProxyClient *common.ProxyClientSturct,data []byte) (int,error){
-	//fmt.Println(util.B2s(data))
 	AESKey:=ProxyClient.AESKey
 	if AESKey==nil{
 		AESKey=util.GetAESKeyByDay()
 	}
-	var bufffer *bytes.Buffer
-	var header []byte
-	data,_=util.EncryptAES(data,AESKey)
 	datelen:=len(data)
-	header,_=util.EncryptAES([]byte{0xFB,byte(datelen%0x100),byte(datelen/0x100),0xFC},AESKey)
-	bufffer=bytes.NewBuffer(header)
+	header:=[]byte{0xFB,byte(datelen%0x100),byte(datelen/0x100),0xFC}
+	bufffer:=bytes.NewBuffer(header)
 	bufffer.Write(data)
-	n,err:=ProxyClient.Remote.Write(bufffer.Bytes())
+	encodedBytes,_:=util.EncryptAES(bufffer.Bytes(),AESKey)
+	n,err:=ProxyClient.Remote.Write(encodedBytes)
 	return n,err
 }
 func CallProxyServer(ProxyClient *common.ProxyClientSturct) (error) {

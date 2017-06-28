@@ -10,5 +10,5 @@ func GetDebug() bool{
 	return debug
 }
 func init(){
-	serverip="45.32.34.191:5294"  //test
+	serverip="127.0.0.1:5294"  //test
 }
