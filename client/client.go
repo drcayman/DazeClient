@@ -118,8 +118,10 @@ func CallProxyServer(ProxyClient *common.ProxyClientSturct) (error) {
 			return errors.New("decode error")
 		}
 		switch command {
+
 		case 0x04:
-			//fmt.Println("key交换成功")
+			SendPacketToServer(ProxyClient,MakePacket(0x03,[]byte("{\"username\":\""+config.GetUsername()+"\",\"password\":\""+config.GetPassword()+"\"}")))
+		case 0x09:
 			command:=byte(0xA1)
 			if ProxyClient.IsUDP{
 				command=byte(0xA2)
@@ -136,6 +138,9 @@ func CallProxyServer(ProxyClient *common.ProxyClientSturct) (error) {
 		case 0xE2:
 			mylog.DPrintln(ProxyClient.Address,"连接失败")
 			return errors.New("conn remote error")
+		case 0xE3:
+			mylog.Println(ProxyClient.Remote.RemoteAddr(),"登录失败，用户名或密码错误")
+			return errors.New("conn remote error")
 		}
 	}
 }
@@ -143,7 +148,7 @@ func CallProxyServer(ProxyClient *common.ProxyClientSturct) (error) {
 func NewTCPProxyConn(address string,ProxyUser net.Conn) (*common.ProxyClientSturct,error){
 	ServerConn,err:=net.Dial("tcp",config.GetServerIP())
 	if err!=nil{
-		mylog.DPrintln("代理服务器",config.GetServerIP(),"连接失败！！！")
+		mylog.Println("代理服务器",config.GetServerIP(),"连接失败！！！")
 		return nil,err
 	}
 	ProxyClient:=common.ProxyClientSturct{Remote:ServerConn,ProxyUser:ProxyUser,Address:address}
@@ -153,7 +158,7 @@ func NewTCPProxyConn(address string,ProxyUser net.Conn) (*common.ProxyClientStur
 func NewUDPProxyConn(address string,ProxyUser net.Conn) (*common.ProxyClientSturct,error){
 	ServerConn,err:=net.Dial("tcp",config.GetServerIP())
 	if err!=nil{
-		mylog.DPrintln("代理服务器",config.GetServerIP(),"连接失败！！！")
+		mylog.Println("代理服务器",config.GetServerIP(),"连接失败！！！")
 		return nil,err
 	}
 	ProxyClient:=common.ProxyClientSturct{Remote:ServerConn,ProxyUser:ProxyUser,Address:address,IsUDP:true}

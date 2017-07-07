@@ -3,7 +3,6 @@ package proxy
 import (
 	"io"
 	"fmt"
-	"log"
 	"net"
 	"strings"
 	"strconv"
@@ -178,9 +177,10 @@ func handleConnection(frontconn net.Conn) {
 func StartSocks5(address string) {
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatal("Listen error: ", err)
+		mylog.Println("Socks5代理服务端监听失败，原因: ", err)
+		return
 	}
-	mylog.Println("socks5 listening at ",address)
+	mylog.Println("Socks5代理服务端成功监听于",address)
 	for {
 		conn, err := listener.Accept()
 		if err != nil {

@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"os"
 	"strings"
 	"bufio"
 	"net/http"
@@ -67,10 +66,10 @@ func LocalHttpsProxyHandle(ProxyUser net.Conn,preBuf []byte){
 func StartHttpsProxy(address string){
 	l,ListenErr:=net.Listen("tcp",address)
 	if ListenErr!=nil{
-		mylog.DPrintln(ListenErr.Error())
-		os.Exit(-1)
+		mylog.Println("HTTP(s)代理服务端监听失败，原因：",ListenErr.Error())
+		return
 	}
-	mylog.Println("https proxy listening at ",address)
+	mylog.Println("HTTP(s)代理服务端成功监听于",address)
 	for {
 		conn,_:=l.Accept()
 		go LocalHttpsProxyHandle(conn,nil)

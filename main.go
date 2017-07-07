@@ -4,11 +4,17 @@ import (
 	"DazeClient/proxy"
 	"fmt"
 	"DazeClient/config"
+	"DazeClient/console"
 )
 
 func main(){
 	fmt.Println("DazeClient V1.0 Author:螃蟹")
-	fmt.Println("DazeProxyServer:",config.GetServerIP())
-	go proxy.StartHttpsProxy(":8080")
-	proxy.StartSocks5(":1080")
+	config.Load()
+	console.Start()
+	if config.GlobaConfig.HTTPProxyPort!=""{
+		go proxy.StartHttpsProxy(":"+config.GlobaConfig.HTTPProxyPort)
+	}
+	if config.GlobaConfig.Socks5Port!=""{
+		go proxy.StartSocks5(":"+config.GlobaConfig.Socks5Port)
+	}
 }
