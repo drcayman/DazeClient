@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"os"
 	"fmt"
+	"strconv"
+	"DazeClient/util"
 )
 var NowSelect int
 func GetServerIP() string{
@@ -76,4 +78,24 @@ func Load(){
 	for i,file:=range ConfigArr {
 		fmt.Printf("ID：%d  地址：%s\n",i+1,file.ServerIP+":"+file.ServerPort)
 	}
+	//加载最后一次的配置文件
+	lastbuf,err:=ioutil.ReadFile("conf/lastPos")
+	if err==nil{
+		i,err:=strconv.Atoi(util.B2s(lastbuf))
+		if err==nil{
+			fmt.Println("加载上次使用的配置文件：",util.B2s(lastbuf))
+			sel(i)
+		}
+	}
+	fmt.Println("使用配置文件ID：",NowSelect+1)
+	fmt.Println("*************")
+}
+func sel(num int){
+	if num<1||len(ConfigArr)<num{
+		fmt.Println("不存在此配置文件")
+		return
+	}
+	NowSelect=num-1
+	fmt.Printf("成功切换到ID为%d的配置\n",num)
+	ioutil.WriteFile("conf/lastPos",[]byte(strconv.Itoa(num)),0666)
 }
