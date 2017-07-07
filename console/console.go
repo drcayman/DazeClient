@@ -37,7 +37,10 @@ func Start(){
 		fmt.Print(">>>>>>")
 		buf,_,_:=r.ReadLine()
 		bufstr:=util.B2s(buf)
-		fmt.Sscanf(bufstr,"%s",&command)
+		n,_:=fmt.Sscanf(bufstr,"%s",&command)
+		if n==0{
+			continue
+		}
 		switch strings.ToLower(command) {
 		case "help":
 			ShowMenu()
