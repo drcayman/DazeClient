@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"strconv"
 	"DazeClient/util"
-	"golang.org/x/sys/windows/registry"
-	"runtime"
 )
 var NowSelect int
 func GetServerIP() string{
@@ -101,29 +99,4 @@ func sel(num int){
 	NowSelect=num-1
 	fmt.Printf("成功切换到ID为%d的配置\n",num)
 	ioutil.WriteFile("conf/lastPos",[]byte(strconv.Itoa(num)),0666)
-}
-func SetSystemProxy(){
-	if runtime.GOOS!="windows"{
-		return
-	}
-	k,_,err:=registry.CreateKey(registry.CURRENT_USER,"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings",registry.ALL_ACCESS)
-	if err!=nil{
-		fmt.Println("设置系统代理失败！")
-		return
-	}
-	k.SetDWordValue("ProxyEnable",1)
-	k.SetStringValue("ProxyServer","127.0.0.1:"+GlobaConfig.HTTPProxyPort)
-	fmt.Println("设置系统HTTP代理成功！请勿非正常关闭此工具，否则会造成无法上网，解决方法是手动关闭IE代理或者正常关闭此工具。")
-}
-func ClearSystemProxy(){
-	if runtime.GOOS!="windows"{
-		return
-	}
-	k,_,err:=registry.CreateKey(registry.CURRENT_USER,"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings",registry.ALL_ACCESS)
-	if err!=nil{
-		fmt.Println("恢复系统代理失败！请手动关闭IE代理！")
-		return
-	}
-	k.SetDWordValue("ProxyEnable",0)
-	fmt.Println("恢复系统代理成功！")
 }
