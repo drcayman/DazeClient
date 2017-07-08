@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"DazeClient/client"
 	"DazeClient/mylog"
-	"DazeClient/config"
 )
 
 func SendPacketToProxyUser(ProxyUser net.Conn,data []byte){
@@ -71,7 +70,6 @@ func StartHttpsProxy(address string){
 		return
 	}
 	mylog.Println("HTTP(s)代理服务端成功监听于",address)
-	config.SetSystemProxy()
 	for {
 		conn,_:=l.Accept()
 		go LocalHttpsProxyHandle(conn,nil)

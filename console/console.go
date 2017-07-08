@@ -17,6 +17,8 @@ func ShowMenu(){
 	fmt.Println("help 显示此帮助")
 	fmt.Println("sel 选择配置文件（比如sel 1）")
 	fmt.Println("debug 临时切换Debug开关")
+	fmt.Println("pon 设置系统代理")
+	fmt.Println("poff 恢复系统代理")
 	fmt.Println("****************************")
 }
 func sel(num int){
@@ -55,6 +57,10 @@ func Start(){
 		case "debug":
 			config.ConfigArr[config.NowSelect].Debug=!config.ConfigArr[config.NowSelect].Debug
 			fmt.Println("DEBUG：",config.ConfigArr[config.NowSelect].Debug)
+		case "pon":
+			config.SetSystemProxy()
+		case "poff":
+			config.ClearSystemProxy()
 		default:
 			fmt.Println("命令格式错误，请输入help来查看帮助")
 		}
