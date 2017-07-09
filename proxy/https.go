@@ -9,6 +9,8 @@ import (
 	"bytes"
 	"DazeClient/client"
 	"DazeClient/mylog"
+	"io/ioutil"
+	"DazeClient/config"
 )
 
 func SendPacketToProxyUser(ProxyUser net.Conn,data []byte){
@@ -39,6 +41,18 @@ func LocalHttpsProxyHandle(ProxyUser net.Conn,preBuf []byte){
 		rq,ReadRequestErr:=http.ReadRequest(r)
 		if ReadRequestErr!=nil{
 			return
+		}
+		if rq.URL.Path=="/!daze.pac"{
+			b,e:=ioutil.ReadFile("gfwlist.pac")
+			if e!=nil{
+				return
+			}
+			SendPacketToProxyUser(ProxyUser,[]byte("HTTP/1.1 200 OK\r\nContent-Type:application/x-ns-proxy-autoconfig\r\n\r\n"))
+			SendPacketToProxyUser(ProxyUser,b)
+			return
+		}else if rq.URL.Path=="/!dazeD.pac"{
+			SendPacketToProxyUser(ProxyUser,[]byte("HTTP/1.1 200 OK\r\nContent-Type:application/x-ns-proxy-autoconfig\r\n\r\n"))
+			SendPacketToProxyUser(ProxyUser,[]byte("function FindProxyForURL(url, host) {return \"PROXY 127.0.0.1:"+config.GlobaConfig.HTTPProxyPort+"\"}"))
 		}
 		address:=rq.Host
 		if strings.Index(address,":") ==-1{

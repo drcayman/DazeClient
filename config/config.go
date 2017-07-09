@@ -35,6 +35,7 @@ type ConfigStruct struct{
 type GlobaConfigStruct struct{
 	HTTPProxyPort string
 	Socks5Port string
+	PAC string
 }
 var GlobaConfig GlobaConfigStruct
 var ConfigArr []ConfigStruct
