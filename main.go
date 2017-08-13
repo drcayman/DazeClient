@@ -9,7 +9,7 @@ import (
 )
 
 func main(){
-	fmt.Println("DazeClient V1.0 Author:螃蟹")
+	fmt.Println("DazeClient V2.0 Author:螃蟹")
 	config.Load()
 	if config.GlobaConfig.HTTPProxyPort!=""{
 		go proxy.StartHttpsProxy(":"+config.GlobaConfig.HTTPProxyPort)
