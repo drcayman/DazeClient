@@ -39,7 +39,10 @@ func Start(){
 	command:=""
 	for{
 		fmt.Print(">>>>>>")
-		buf,_,_:=r.ReadLine()
+		buf,_,err:=r.ReadLine()
+		if err!=nil{
+			return
+		}
 		bufstr:=util.B2s(buf)
 		n,_:=fmt.Sscanf(bufstr,"%s",&command)
 		if n==0{
