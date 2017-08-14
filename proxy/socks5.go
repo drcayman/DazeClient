@@ -7,8 +7,9 @@ import (
 	"strings"
 	"strconv"
 	"DazeClient/client"
-	common "DazeClient/mystruct"
-	"DazeClient/mylog"
+	"DazeClient/common"
+	"DazeClient/config"
+	"log"
 )
 // Convert a IP:Port string to a byte array in network order.
 // e.g.: 74.125.31.104:80 -> [74 125 31 104 0 80]
@@ -47,19 +48,27 @@ func errorReplyConnect(reason byte) []byte {
 }
 
 func performConnect(backend string, frontconn net.Conn) {
-	mylog.DPrintln("trying to connect to ", backend)
+	if config.GetDebug(){
+		log.Println("trying to connect to ", backend)
+	}
 	//backconn, err := net.Dial("tcp", backend)
-	ProxyClient,err:=client.NewTCPProxyConn(backend,frontconn)
-	if err != nil {
-		mylog.DPrintln("failed to connect to ", backend, err)
+	ProxyClient,err:=client.NewProxyConn(backend,frontconn,true)
+	if ProxyClient==nil || err != nil {
+		if config.GetDebug() {
+			log.Println("failed to connect to ", backend, err)
+		}
 		frontconn.Write(errorReplyConnect(0x05))
 		return
 	}
 	backaddr := ProxyClient.RemoteRealAddr
-	mylog.DPrintln("CONNECTED backend", backaddr)
+	if config.GetDebug() {
+		log.Println("CONNECTED backend", backaddr)
+	}
 	defer func() {
 		ProxyClient.Remote.Close()
-		mylog.DPrintln("DISCONNECTED backend", backaddr)
+		if config.GetDebug() {
+			log.Println("DISCONNECTED backend", backaddr)
+		}
 	}()
 
 	// reply to the CONNECT command
@@ -104,13 +113,19 @@ quit:
 }
 func handleConnection(frontconn net.Conn) {
 	frontaddr := frontconn.RemoteAddr().String()
-	mylog.DPrintln("ACCEPTED frontend",  frontaddr)
+	if config.GetDebug() {
+		log.Println("ACCEPTED frontend", frontaddr)
+	}
 	defer func() {
 		if err := recover(); err != nil {
-			mylog.DPrintln("ERROR frontend", frontaddr, err)
+			if config.GetDebug(){
+				log.Println("ERROR frontend", frontaddr, err)
+			}
 		}
 		frontconn.Close()
-		mylog.DPrintln("DISCONNECTED frontend",  frontaddr)
+		if config.GetDebug() {
+			log.Println("DISCONNECTED frontend", frontaddr)
+		}
 	}()
 
 	// receive auth packet
@@ -177,14 +192,13 @@ func handleConnection(frontconn net.Conn) {
 func StartSocks5(address string) {
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		mylog.Println("Socks5代理服务端监听失败，原因: ", err)
+		log.Println("Socks5代理服务端监听失败，原因: ", err)
 		return
 	}
-	mylog.Println("Socks5代理服务端成功监听于",address)
+	log.Println("Socks5代理服务端成功监听于",address)
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			mylog.DPrintln("Accept error:", err)
 			continue
 		}
 		go handleConnection(conn)

@@ -5,12 +5,12 @@ import (
 	"bufio"
 	"net/http"
 	"net"
-	common "DazeClient/mystruct"
+	"DazeClient/common"
 	"bytes"
 	"DazeClient/client"
-	"DazeClient/mylog"
 	"io/ioutil"
 	"DazeClient/config"
+	"log"
 )
 
 func SendPacketToProxyUser(ProxyUser net.Conn,data []byte){
@@ -58,9 +58,9 @@ func LocalHttpsProxyHandle(ProxyUser net.Conn,preBuf []byte){
 		if strings.Index(address,":") ==-1{
 			address+=":80"
 		}
-		mylog.DPrintln("建立代理连接到",address)
-		ProxyClient,newErr:=client.NewTCPProxyConn(address,ProxyUser)
-		if newErr!=nil{
+		log.Println("建立代理连接到",address)
+		ProxyClient,newErr:=client.NewProxyConn(address,ProxyUser,true)
+		if ProxyClient==nil || newErr!=nil{
 			return
 		}
 		if rq.Method=="CONNECT"{
@@ -80,10 +80,10 @@ func LocalHttpsProxyHandle(ProxyUser net.Conn,preBuf []byte){
 func StartHttpsProxy(address string){
 	l,ListenErr:=net.Listen("tcp",address)
 	if ListenErr!=nil{
-		mylog.Println("HTTP(s)代理服务端监听失败，原因：",ListenErr.Error())
+		log.Println("HTTP(s)代理服务端监听失败，原因：",ListenErr.Error())
 		return
 	}
-	mylog.Println("HTTP(s)代理服务端成功监听于",address)
+	log.Println("HTTP(s)代理服务端成功监听于",address)
 	for {
 		conn,_:=l.Accept()
 		go LocalHttpsProxyHandle(conn,nil)

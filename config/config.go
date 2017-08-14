@@ -25,11 +25,21 @@ func GetUsername() string{
 func GetPassword() string{
 	return ConfigArr[NowSelect].Password
 }
+func GetDisguise() (string,string){
+	return ConfigArr[NowSelect].Disguise,ConfigArr[NowSelect].DisguiseParam
+}
+func GetEncryption() (string,string){
+	return ConfigArr[NowSelect].Encryption,ConfigArr[NowSelect].EncryptionParam
+}
 type ConfigStruct struct{
 	ServerIP string
 	ServerPort string
 	Username string
 	Password string
+	Disguise string
+	DisguiseParam string
+	Encryption string
+	EncryptionParam string
 	Debug bool
 }
 type GlobaConfigStruct struct{
@@ -77,7 +87,8 @@ func Load(){
 	}
 	fmt.Println("*************\n可用配置文件列表：")
 	for i,file:=range ConfigArr {
-		fmt.Printf("ID：%d  地址：%s\n",i+1,file.ServerIP+":"+file.ServerPort)
+		fmt.Printf("ID：%d  地址：%s 加密：%s 加密方式：%s 伪装:%s 伪装参数：%s \n",i+1,file.ServerIP+":"+file.ServerPort,
+					file.Encryption,file.EncryptionParam,file.Disguise,file.DisguiseParam)
 	}
 	//加载最后一次的配置文件
 	lastbuf,err:=ioutil.ReadFile("conf/lastPos")
