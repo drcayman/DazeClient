@@ -69,7 +69,7 @@ func SendPacketToServer(ProxyClient *common.ProxyClientSturct,data []byte){
 			return
 		}
 		bufffer:=bytes.NewBuffer(headerEncoded[0])
-		bufffer.Write(data)
+		bufffer.Write(pkt)
 		_,err:=ProxyClient.Remote.Write(bufffer.Bytes())
 		if err!=nil{
 			return
@@ -89,8 +89,8 @@ func ReadFromServer(ProxyClient *common.ProxyClientSturct) ([]byte,error){
 		return nil,errors.New("decode header error")
 	}
 	PacketLen:=int(headerDecode[1])+int(headerDecode[2])*256
-	buf:=make([]byte,4+PacketLen)
-	pos:=4
+	buf:=make([]byte,PacketLen)
+	pos:=0
 	for{
 		n,err:=ProxyClient.Remote.Read(buf[pos:])
 		if err!=nil{
@@ -105,12 +105,13 @@ func ReadFromServer(ProxyClient *common.ProxyClientSturct) ([]byte,error){
 			break
 		}
 	}
-	copy(buf,HeaderBuf)
+	//copy(buf,HeaderBuf)
+
 	DecodeBuf,err:=ProxyClient.Encryption.Decrypt(&ProxyClient.EncReserved,buf)
 	if err!=nil{
 		return nil,errors.New("decode body error")
 	}
-	return DecodeBuf[4:],nil
+	return DecodeBuf,nil
 }
 
 //呼叫代理服务器并开始代理
@@ -135,11 +136,12 @@ func CallProxyServer(ProxyClient *common.ProxyClientSturct) (error) {
 	for {
 		buf, ReadErr := ReadFromServer(ProxyClient)
 		if ReadErr != nil {
-			panic("数据传输错误！")
+			panic("数据传输错误！请检查加密方式和参数是否跟服务器一致！")
 		}
 		command, data, DePacketErr := DePacket(buf)
 		if DePacketErr != nil {
-			panic("协议解析错误！")
+			panic("数据解析错误！请检查加密方式和参数是否跟服务器一致！")
+
 		}
 		switch command {
 		case 0xC1:
@@ -194,7 +196,7 @@ func NewProxyConn(address string,ProxyUser net.Conn,IsTCP bool) (*common.ProxyCl
 		panic("加密方式"+EncryptionName+"不存在")
 	}
 	ProxyClient.Encryption=enc()
-	encInitErr:=ProxyClient.Encryption.Init(EncryptionParam)
+	encInitErr:=ProxyClient.Encryption.Init(EncryptionParam,&ProxyClient.EncReserved)
 	if encInitErr!=nil{
 		panic("加密方式"+EncryptionName+"加载错误！原因："+encInitErr.Error())
 	}
