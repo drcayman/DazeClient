@@ -35,6 +35,9 @@ func (this *HTTP) Action(conn net.Conn ,client *interface{}) (error){
 	if reqErr!=nil{
 		return reqErr
 	}
+	req.Header=make(http.Header)
+	req.Header.Add("Connection","keep-alive")
+	req.Header.Add("Accept","*/*")
 	req.Write(conn)
 	_,err:=http.ReadResponse(bufio.NewReader(conn),nil)
 	conn.Write([]byte{byte(mrand.Intn(128))})
