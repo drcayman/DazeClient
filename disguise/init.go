@@ -30,4 +30,7 @@ func init(){
 	disguiseMap["http_post"]=func()(DisguiseAction){
 		return DisguiseAction(&HTTP{"POST"})
 	}
+	disguiseMap["tls_handshake"]=func()(DisguiseAction){
+		return DisguiseAction(&TlsHandshake{})
+	}
 }

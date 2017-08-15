@@ -46,7 +46,7 @@ func (this *HTTP)GetRandomString(strlen int) string{
 	result := []byte{}
 	r := mrand.New(mrand.NewSource(time.Now().UnixNano()))
 	for i := 0; i < strlen; i++ {
-		result = append(result, byts[r.Intn(len(bytes))])
+		result = append(result, byts[r.Intn(len(byts))])
 	}
 	return string(result)
 }
