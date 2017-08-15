@@ -5,7 +5,7 @@ import (
 	"net"
 )
 type DisguiseAction interface {
-	Init(string)(error)
+	Init(string,*interface{})(error)
 	Action(net.Conn,*interface{})(error)
 }
 type regfunc func()(DisguiseAction)
@@ -22,6 +22,12 @@ func init(){
 
 	//这里添加自己开发的伪装模块
 	disguiseMap["none"]=func()(DisguiseAction){
-		return DisguiseAction(new(none))
+		return DisguiseAction(&none{})
+	}
+	disguiseMap["http_get"]=func()(DisguiseAction){
+		return DisguiseAction(&HTTP{"GET"})
+	}
+	disguiseMap["http_post"]=func()(DisguiseAction){
+		return DisguiseAction(&HTTP{"POST"})
 	}
 }

@@ -207,7 +207,7 @@ func NewProxyConn(address string,ProxyUser net.Conn,IsTCP bool) (*common.ProxyCl
 		panic("伪装方式"+DisguiseName+"不存在")
 	}
 	ProxyClient.Disguise=dsg()
-	dsgInitErr:=ProxyClient.Disguise.Init(DisguiseParam)
+	dsgInitErr:=ProxyClient.Disguise.Init(DisguiseParam,&ProxyClient.DsgReserved)
 	if dsgInitErr!=nil{
 		panic("伪装方式"+DisguiseName+"加载错误！原因："+dsgInitErr.Error())
 	}

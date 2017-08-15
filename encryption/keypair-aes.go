@@ -17,7 +17,7 @@ import (
 )
 
 type KeypairAes struct {
-
+	reserved string
 }
 type KeypairAesTmp struct {
 	Key []byte
@@ -32,7 +32,7 @@ func (this *KeypairAes)InitUser(conn net.Conn,client *interface{})(error){
 	for pos<294{
 		n,err:=conn.Read(buf[pos:])
 		if err!=nil{
-			return errors.New("服务器在握手期间断开连接")
+			return errors.New("服务器在握手期间断开连接"+err.Error())
 		}
 		pos+=n
 	}
