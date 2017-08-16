@@ -49,6 +49,38 @@ type GlobaConfigStruct struct{
 }
 var GlobaConfig GlobaConfigStruct
 var ConfigArr []ConfigStruct
+func loadConfFile(filepath string) bool {
+	buf,ReadFileErr:=ioutil.ReadFile(filepath)
+	if ReadFileErr!=nil{
+		fmt.Println("无法访问配置文件：",filepath,"原因：",ReadFileErr.Error())
+		return false
+	}
+	config:=ConfigStruct{}
+	err:=json.Unmarshal(buf,&config)
+	if err!=nil{
+		fmt.Println("寻找到配置文件(",filepath,"),加载失败，原因：",err.Error())
+	}else{
+		fmt.Println("寻找到配置文件(",filepath,"),加载成功")
+		ConfigArr=append(ConfigArr,config)
+	}
+	return true
+}
+func LoadConfFile(filepath string){
+	if !loadConfFile(filepath){
+		os.Exit(-1)
+	}else{
+		fmt.Printf("配置文件%s加载成功，地址：%s 加密：%s 加密参数：%s 伪装:%s 伪装参数：%s 调试：%v\n",filepath,ConfigArr[0].ServerIP+":"+
+			ConfigArr[0].ServerPort,
+			ConfigArr[0].Encryption,
+			ConfigArr[0].EncryptionParam,
+			ConfigArr[0].Disguise,
+			ConfigArr[0].DisguiseParam,
+			ConfigArr[0].Debug,
+		)
+		NowSelect=0
+	}
+
+}
 func Load(){
 	globabuf,err:=ioutil.ReadFile("globa.conf")
 	if err!=nil{
@@ -71,15 +103,7 @@ func Load(){
 		if strings.Index(file.Name(),".conf")==-1{
 			continue
 		}
-		buf,_:=ioutil.ReadFile("conf/"+file.Name())
-		config:=ConfigStruct{}
-		err:=json.Unmarshal(buf,&config)
-		if err!=nil{
-			fmt.Println("寻找到配置文件(",file.Name(),"),加载失败，原因：",err.Error())
-		}else{
-			fmt.Println("寻找到配置文件(",file.Name(),"),加载成功")
-			ConfigArr=append(ConfigArr,config)
-		}
+		loadConfFile("conf/"+file.Name())
 	}
 	if len(ConfigArr)==0{
 		fmt.Println("没有找到可用配置文件！请确认是否正确的把配置文件放到conf目录。")
@@ -87,8 +111,8 @@ func Load(){
 	}
 	fmt.Println("*************\n可用配置文件列表：")
 	for i,file:=range ConfigArr {
-		fmt.Printf("ID：%d  地址：%s 加密：%s 加密方式：%s 伪装:%s 伪装参数：%s \n",i+1,file.ServerIP+":"+file.ServerPort,
-					file.Encryption,file.EncryptionParam,file.Disguise,file.DisguiseParam)
+		fmt.Printf("ID：%d  地址：%s 加密：%s 加密参数：%s 伪装:%s 伪装参数：%s 调试：%v\n",i+1,file.ServerIP+":"+file.ServerPort,
+					file.Encryption,file.EncryptionParam,file.Disguise,file.DisguiseParam,file.Debug)
 	}
 	//加载最后一次的配置文件
 	lastbuf,err:=ioutil.ReadFile("conf/lastPos")

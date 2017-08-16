@@ -150,9 +150,9 @@ func CallProxyServer(ProxyClient *common.ProxyClientSturct) (error) {
 			log.Println(ProxyClient.Address,"代理连接建立成功")
 			return nil
 		case 0xE1:
-			panic("远程无法解析目标IP")
+			panic("代理服务器无法解析要代理的目标域名")
 		case 0xE2:
-			panic("远程无法连接目标IP")
+			panic("代理服务器无法连接要代理的目标IP")
 		case 0xE3:
 			panic("用户名或者密码错误")
 		}
