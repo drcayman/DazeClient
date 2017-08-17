@@ -82,7 +82,7 @@ func ReadFromServer(ProxyClient *common.ProxyClientSturct) ([]byte,error){
 	HeaderBuf:=make([]byte,4)
 	n,err:=ProxyClient.Remote.Read(HeaderBuf)
 	if n<4 ||err!=nil{
-		return nil,errors.New("read header error ")
+		return nil,errors.New("read header error")
 	}
 	headerDecode,err:=ProxyClient.Encryption.Decrypt(&ProxyClient.EncReserved,HeaderBuf)
 	if err!=nil || headerDecode[0]!=0xFB || headerDecode[3]!=0xFC{
@@ -136,7 +136,12 @@ func CallProxyServer(ProxyClient *common.ProxyClientSturct) (error) {
 	for {
 		buf, ReadErr := ReadFromServer(ProxyClient)
 		if ReadErr != nil {
-			panic("数据传输错误！请检查加密方式和参数是否跟服务器一致！")
+			if ReadErr.Error()=="read header error"{
+				panic("数据传输错误！很可能是网络原因导致！")
+			}else{
+				panic("数据传输错误！请检查加密方式和参数是否跟服务器一致！")
+			}
+
 		}
 		command, data, DePacketErr := DePacket(buf)
 		if DePacketErr != nil {
@@ -178,7 +183,7 @@ func NewProxyConn(address string,ProxyUser net.Conn,IsTCP bool) (*common.ProxyCl
 	}
 	ServerConn,err:=net.Dial("tcp",config.GetServerIP())
 	if err!=nil{
-		log.Println("代理服务器",config.GetServerIP(),"连接失败！！！")
+		log.Println("在代理",address,"时代理服务器",config.GetServerIP(),"连接失败！！！")
 		return nil,err
 	}
 	ProxyClient:=common.ProxyClientSturct{
@@ -189,7 +194,7 @@ func NewProxyConn(address string,ProxyUser net.Conn,IsTCP bool) (*common.ProxyCl
 	}
 	defer func(){
 		if err := recover(); err != nil{
-				log.Printf("代理服务器%s连接失败！原因：%s",config.GetServerIP(),err)
+				log.Printf("代理服务器%s代理失败！原因：%s",config.GetServerIP(),err)
 				Disconnect(&ProxyClient)
 			}
 

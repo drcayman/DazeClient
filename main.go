@@ -11,7 +11,7 @@ import (
 
 func main(){
 	m:=go_args.ReadArgs()
-	fmt.Println("DazeClient V2.0-2017081702 Author:螃蟹")
+	fmt.Println("DazeClient V2.0-2017081703 Author:螃蟹")
 	conf,flag:=m.GetArg("-conf")
 	if flag{
 		config.LoadConfFile(conf)
