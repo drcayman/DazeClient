@@ -104,7 +104,7 @@ quit:
 }
 
 func HTTPSBridgeProxyToRemote(ProxyClient *common.ProxyClientSturct){
-	buf:=make([]byte,65536)
+	buf:=make([]byte,10240)
 	for {
 		n,err:=ProxyClient.ProxyUser.Read(buf)
 		if err!=nil{
