@@ -17,7 +17,7 @@ func SetSystemProxy(){
 		return
 	}
 	k.SetDWordValue("ProxyEnable",1)
-	k.SetStringValue("ProxyServer","127.0.0.1:"+GlobaConfig.HTTPProxyPort)
+	k.SetStringValue("ProxyServer","127.0.0.1:"+GlobalConfig.HTTPProxyPort)
 	k.DeleteValue("AutoConfigURL")
 	NotifySystem()
 	fmt.Println("设置系统HTTP代理成功！请勿忘记恢复系统代理，否则会造成无法上网，解决方法是手动关闭IE代理或者输入off。")
@@ -34,12 +34,12 @@ func ClearSystemProxy(){
 	fmt.Println("恢复系统代理成功！")
 }
 func UpdatePac() bool{
-	rsp,err:=http.Get(GlobaConfig.PAC)
+	rsp,err:=http.Get(GlobalConfig.PAC)
 	if err!=nil{
 		return false
 	}
 	buf,_:=ioutil.ReadAll(rsp.Body)
-	buf=bytes.Replace(buf,[]byte("SOCKS5 127.0.0.1:1080"),[]byte("PROXY 127.0.0.1:"+GlobaConfig.HTTPProxyPort),1)
+	buf=bytes.Replace(buf,[]byte("SOCKS5 127.0.0.1:1080"),[]byte("PROXY 127.0.0.1:"+GlobalConfig.HTTPProxyPort),1)
 	ioutil.WriteFile("gfwlist.pac",buf,0666)
 	if err!=nil{
 		return false
@@ -60,7 +60,7 @@ func SetPacProxyGFW(){
 		fmt.Println("设置系统代理失败！")
 		return
 	}
-	k.SetStringValue("AutoConfigURL","http://127.0.0.1:"+GlobaConfig.HTTPProxyPort+"/!daze.pac")
+	k.SetStringValue("AutoConfigURL","http://127.0.0.1:"+GlobalConfig.HTTPProxyPort+"/!daze.pac")
 	NotifySystem()
 	fmt.Println("设置系统HTTP代理PAC模式成功！")
 }
@@ -71,7 +71,7 @@ func SetPacProxyDirect(){
 		fmt.Println("设置系统代理失败！")
 		return
 	}
-	k.SetStringValue("AutoConfigURL","http://127.0.0.1:"+GlobaConfig.HTTPProxyPort+"/!dazeD.pac")
+	k.SetStringValue("AutoConfigURL","http://127.0.0.1:"+GlobalConfig.HTTPProxyPort+"/!dazeD.pac")
 	NotifySystem()
 	fmt.Println("设置系统HTTP代理成功！")
 }

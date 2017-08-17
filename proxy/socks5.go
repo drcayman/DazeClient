@@ -48,15 +48,15 @@ func errorReplyConnect(reason byte) []byte {
 }
 
 func performConnect(backend string, frontconn net.Conn) {
-	if config.GetDebug(){
-		log.Println("trying to connect to ", backend)
-	}
-	//backconn, err := net.Dial("tcp", backend)
+	//if config.GetDebug(){
+	//	log.Println("trying to connect to ", backend)
+	//}
+	////backconn, err := net.Dial("tcp", backend)
 	ProxyClient,err:=client.NewProxyConn(backend,frontconn,true)
 	if ProxyClient==nil || err != nil {
-		if config.GetDebug() {
-			log.Println("failed to connect to ", backend, err)
-		}
+		//if config.GetDebug() {
+		//	log.Println("failed to connect to ", backend, err)
+		//}
 		frontconn.Write(errorReplyConnect(0x05))
 		return
 	}

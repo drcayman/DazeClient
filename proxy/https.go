@@ -52,13 +52,13 @@ func LocalHttpsProxyHandle(ProxyUser net.Conn,preBuf []byte){
 			return
 		}else if rq.URL.Path=="/!dazeD.pac"{
 			SendPacketToProxyUser(ProxyUser,[]byte("HTTP/1.1 200 OK\r\nContent-Type:application/x-ns-proxy-autoconfig\r\n\r\n"))
-			SendPacketToProxyUser(ProxyUser,[]byte("function FindProxyForURL(url, host) {return \"PROXY 127.0.0.1:"+config.GlobaConfig.HTTPProxyPort+"\"}"))
+			SendPacketToProxyUser(ProxyUser,[]byte("function FindProxyForURL(url, host) {return \"PROXY 127.0.0.1:"+config.GlobalConfig.HTTPProxyPort+"\"}"))
 		}
 		address:=rq.Host
 		if strings.Index(address,":") ==-1{
 			address+=":80"
 		}
-		log.Println("建立代理连接到",address)
+		//log.Println("建立代理连接到",address)
 		ProxyClient,newErr:=client.NewProxyConn(address,ProxyUser,true)
 		if ProxyClient==nil || newErr!=nil{
 			return

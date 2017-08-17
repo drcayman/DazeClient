@@ -11,7 +11,7 @@ import (
 
 func main(){
 	m:=go_args.ReadArgs()
-	fmt.Println("DazeClient V2.0-2017081601 Author:螃蟹")
+	fmt.Println("DazeClient V2.0-2017081701 Author:螃蟹")
 	conf,flag:=m.GetArg("-conf")
 	if flag{
 		config.LoadConfFile(conf)
@@ -23,11 +23,11 @@ func main(){
 		go console.Start()
 	}
 
-	if config.GlobaConfig.HTTPProxyPort!=""{
-		go proxy.StartHttpsProxy(":"+config.GlobaConfig.HTTPProxyPort)
+	if config.GlobalConfig.HTTPProxyPort!=""{
+		go proxy.StartHttpsProxy(":"+config.GlobalConfig.HTTPProxyPort)
 	}
-	if config.GlobaConfig.Socks5Port!=""{
-		go proxy.StartSocks5(":"+config.GlobaConfig.Socks5Port)
+	if config.GlobalConfig.Socks5Port!=""{
+		go proxy.StartSocks5(":"+config.GlobalConfig.Socks5Port)
 	}
 	for{
 		time.Sleep(time.Second*3600)

@@ -42,12 +42,12 @@ type ConfigStruct struct{
 	EncryptionParam string
 	Debug bool
 }
-type GlobaConfigStruct struct{
+type GlobalConfigStruct struct{
 	HTTPProxyPort string
 	Socks5Port string
 	PAC string
 }
-var GlobaConfig GlobaConfigStruct
+var GlobalConfig GlobalConfigStruct
 var ConfigArr []ConfigStruct
 func loadConfFile(filepath string) bool {
 	buf,ReadFileErr:=ioutil.ReadFile(filepath)
@@ -82,17 +82,17 @@ func LoadConfFile(filepath string){
 
 }
 func Load(){
-	globabuf,err:=ioutil.ReadFile("globa.conf")
+	globalbuf,err:=ioutil.ReadFile("global.conf")
 	if err!=nil{
 		fmt.Println("全局配置文件(globa.conf)加载错误！")
 		os.Exit(-1)
 	}
-	err=json.Unmarshal(globabuf,&GlobaConfig)
+	err=json.Unmarshal(globalbuf,&GlobalConfig)
 	if err!=nil{
 		fmt.Println("全局配置文件(globa.conf)解析错误！原因：",err.Error())
 		os.Exit(-1)
 	}
-	if GlobaConfig.HTTPProxyPort=="" && GlobaConfig.Socks5Port==""{
+	if GlobalConfig.HTTPProxyPort=="" && GlobalConfig.Socks5Port==""{
 		fmt.Println("Http代理和Socks5代理的端口不能同时为空！")
 		os.Exit(-1)
 	}

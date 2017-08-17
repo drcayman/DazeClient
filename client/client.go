@@ -147,7 +147,9 @@ func CallProxyServer(ProxyClient *common.ProxyClientSturct) (error) {
 		case 0xC1:
 			ProxyClient.IsConnected=true
 			ProxyClient.RemoteRealAddr=util.B2s(data)
-			log.Println(ProxyClient.Address,"代理连接建立成功")
+			if config.GetDebug(){
+				log.Println(ProxyClient.Address,"代理连接建立成功")
+			}
 			return nil
 		case 0xE1:
 			panic("代理服务器无法解析要代理的目标域名")
@@ -171,6 +173,9 @@ func Disconnect(ProxyClient *common.ProxyClientSturct){
 
 //新代理客户端链接
 func NewProxyConn(address string,ProxyUser net.Conn,IsTCP bool) (*common.ProxyClientSturct,error){
+	if config.GetDebug(){
+		log.Println("建立代理连接到",address)
+	}
 	ServerConn,err:=net.Dial("tcp",config.GetServerIP())
 	if err!=nil{
 		log.Println("代理服务器",config.GetServerIP(),"连接失败！！！")
