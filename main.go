@@ -24,10 +24,10 @@ func main(){
 	}
 
 	if config.GlobalConfig.HTTPProxyPort!=""{
-		go proxy.StartHttpsProxy(":"+config.GlobalConfig.HTTPProxyPort)
+		go proxy.StartHttpsProxy("127.0.0.1:"+config.GlobalConfig.HTTPProxyPort)
 	}
 	if config.GlobalConfig.Socks5Port!=""{
-		go proxy.StartSocks5(":"+config.GlobalConfig.Socks5Port)
+		go proxy.StartSocks5("127.0.0.1:"+config.GlobalConfig.Socks5Port)
 	}
 	for{
 		time.Sleep(time.Second*3600)

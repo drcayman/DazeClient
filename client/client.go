@@ -82,7 +82,7 @@ func ReadFromServer(ProxyClient *common.ProxyClientSturct) ([]byte,error){
 	HeaderBuf:=make([]byte,4)
 	n,err:=ProxyClient.Remote.Read(HeaderBuf)
 	if n<4 ||err!=nil{
-		return nil,errors.New("read header error")
+		return nil,errors.New("read header error"+err.Error())
 	}
 	headerDecode,err:=ProxyClient.Encryption.Decrypt(&ProxyClient.EncReserved,HeaderBuf)
 	if err!=nil || headerDecode[0]!=0xFB || headerDecode[3]!=0xFC{

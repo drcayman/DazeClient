@@ -84,12 +84,12 @@ func LoadConfFile(filepath string){
 func Load(){
 	globalbuf,err:=ioutil.ReadFile("global.conf")
 	if err!=nil{
-		fmt.Println("全局配置文件(globa.conf)加载错误！")
+		fmt.Println("全局配置文件(global.conf)加载错误！")
 		os.Exit(-1)
 	}
 	err=json.Unmarshal(globalbuf,&GlobalConfig)
 	if err!=nil{
-		fmt.Println("全局配置文件(globa.conf)解析错误！原因：",err.Error())
+		fmt.Println("全局配置文件(global.conf)解析错误！原因：",err.Error())
 		os.Exit(-1)
 	}
 	if GlobalConfig.HTTPProxyPort=="" && GlobalConfig.Socks5Port==""{

@@ -13,6 +13,8 @@ type ProxyClientSturct struct{
 	IsUDP bool
 	Address string
 	Protocol string
+	UDPHeader []byte
+	UDPTarget *net.UDPAddr
 	Disguise disguise.DisguiseAction
 	Encryption encryption.EncryptionAction
 	EncReserved interface{}
