@@ -5,7 +5,7 @@ import (
 	"net"
 )
 type Action interface {
-	//Action，用户连接后进行的混淆操作
+	//Action，用户连接后进行的伪装操作
 	//conn：用户的连接套接字
 	//param：配置文件里面填写的ObscureParam
 	Action(conn net.Conn,	param string)(error)
