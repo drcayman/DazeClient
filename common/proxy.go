@@ -10,7 +10,7 @@ type S_proxy struct{
 	Encryption string
 	EncryptionParam string
 
-	//混淆方式与参数
+	//伪装方式与参数
 	Obscure string
 	ObscureParam string
 

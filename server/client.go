@@ -26,7 +26,7 @@ type S_Client struct {
 	TargetHost string
 	TargetHostRealAddr string
 
-	//加密与混淆的接口
+	//加密与伪装的接口
 	Ob obscure.Action
 	E encryption.Action
 	EReserved interface{}
@@ -187,10 +187,10 @@ func CallProxyServer(ProxyUser net.Conn,cfg *common.S_proxy,host string,network 
 	}
 	client.E=E()
 
-	//加载混淆模块
+	//加载伪装模块
 	Ob,ExistFlag:=obscure.GetObscure(client.Obscure)
 	if !ExistFlag{
-		panic("混淆方式"+client.Obscure+"不存在")
+		panic("伪装方式"+client.Obscure+"不存在")
 	}
 	client.Ob=Ob()
 
@@ -205,7 +205,7 @@ func CallProxyServer(ProxyUser net.Conn,cfg *common.S_proxy,host string,network 
 	//设置验证超时时间
 	client.RemoteServerConn.SetDeadline(time.Now().Add(time.Second*3))
 
-	//开始混淆
+	//开始伪装
 	obErr:=client.Ob.Action(client.RemoteServerConn,client.ObscureParam)
 	if obErr!=nil{
 		panic("伪装时出现错误："+obErr.Error())
