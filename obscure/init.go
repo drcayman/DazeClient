@@ -30,6 +30,9 @@ func init(){
 	obscureMap["http_get"]=func()(Action){
 		return Action(&Http{"GET"})
 	}
+	obscureMap["http"]=func()(Action){
+		return Action(&Http{"GET"})
+	}
 	obscureMap["http_post"]=func()(Action){
 		return Action(&Http{"POST"})
 	}

@@ -7,8 +7,6 @@ import (
 	"github.com/crabkun/DazeClient/util"
 	"bytes"
 	"bufio"
-	"strings"
-	"fmt"
 	"errors"
 )
 
@@ -35,36 +33,21 @@ func (this *Http) Action(conn net.Conn , param string) (error){
 	req.Header.Add("Accept","*/*")
 	req.Write(conn)
 	reader:=bufio.NewReader(conn)
-	ContentLength:=-1
-	r:=""
-	for{
-		line,err:=reader.ReadString('\n')
-		if err!=nil{
-			return err
-		}
-		if strings.Index(line,"Content-Length: ")!=-1{
-			_,err=fmt.Sscanf(line,"%s%d",&r,&ContentLength)
-			if err!=nil{
-				return err
-			}
-		}
-		if line=="\r\n"{
-			break
-		}
+	rsp,err:=http.ReadResponse(reader,nil)
+	if err!=nil{
+		return err
 	}
-	if ContentLength==-1{
-		return errors.New("Content-Length read error")
-	}
-	return SafeRead(conn,ContentLength)
+	conn.Write([]byte(util.GetRandomString(int(rsp.ContentLength))))
+	return nil
 }
-func SafeRead(conn net.Conn,length int) (error) {
+func SafeRead(conn net.Conn,length int) ([]byte,error) {
 	buf:=make([]byte,length)
 	for pos:=0;pos<length;{
 		n,err:=conn.Read(buf[pos:])
 		if err!=nil {
-			return errors.New("根据Content-Length读取负载错误")
+			return nil,errors.New("根据Content-Length读取负载错误")
 		}
 		pos+=n
 	}
-	return nil
+	return buf,nil
 }
