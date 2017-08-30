@@ -64,7 +64,7 @@ func (client *S_Client)Read() []byte {
 	//解码头部
 	header:=client.Decode(headerEncoded)
 	if header[0]!=0xF1 && header[3]!=0xF2{
-		panic("头部不匹配，可能是伪装或者加密方式不匹配")
+		panic("头部不匹配，可能是伪装或者加密方式和参数不正确")
 	}
 	//读取负载
 	length:=int(header[1])+int(header[2])*256
@@ -80,7 +80,7 @@ func (client *S_Client)SafeRead(conn net.Conn,length int) ([]byte) {
 	for pos:=0;pos<length;{
 		n,err:=conn.Read(buf[pos:])
 		if err!=nil {
-			panic(" 连接正常断开")
+			panic(nil)
 		}
 		pos+=n
 	}
@@ -101,7 +101,7 @@ func (client *S_Client)SafeSend(data []byte,conn net.Conn){
 	for pos:=0;pos<length;{
 		n,err:=conn.Write(data[pos:])
 		if err!=nil {
-			panic(" 连接正常断开")
+			panic(nil)
 		}
 		pos+=n
 	}
@@ -165,15 +165,13 @@ func CallProxyServer(ProxyUser net.Conn,cfg *common.S_proxy,host string,network 
 	var client *S_Client
 	defer func(){
 		if err := recover(); err != nil{
-			if err.(string)[:1]!=" "{
-				log.Println(fmt.Sprintf("目标([%s]%s)代理结束（原因：%s）",network,host,err))
-			}else{
-				if !client.Connected{
-					log.Println(fmt.Sprintf("目标([%s]%s)代理在握手期间被结束！可能是网络问题，也可能是伪装或者加密方式和参数不正确！",network,host))
-				}
-			}
+			log.Println(fmt.Sprintf("目标([%s]%s)代理结束！(%s)",network,host,err))
 			if client.RemoteServeFlag{
 				client.RemoteServerConn.Close()
+			}
+		}else{
+			if !client.Connected{
+				log.Println(fmt.Sprintf("目标([%s]%s)代理在握手期间被结束！可能是网络问题，也可能是伪装或者加密方式和参数不正确！",network,host))
 			}
 		}
 	}()
