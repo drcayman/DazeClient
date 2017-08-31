@@ -9,22 +9,6 @@ import (
 	"github.com/crabkun/DazeClient/server"
 	"regexp"
 )
-//func StartHttpProxy()(error){
-//	l,err:=net.Listen("tcp","127.0.0.1:"+common.SrvConf.HTTPProxyPort)
-//	if err!=nil{
-//		log.Println("本地HTTP(S)代理监听失败！原因：",err.Error())
-//		return err
-//	}
-//	log.Println("本地HTTP(S)代理成功监听在",l.Addr())
-//	for {
-//		conn,err:=l.Accept()
-//		if err!=nil{
-//			continue
-//		}
-//		go ProxyHandle(conn)
-//	}
-//	return nil
-//}
 func HTTPProxyHandle(c net.Conn){
 	proto:="http"
 	defer func(){

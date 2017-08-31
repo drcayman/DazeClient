@@ -7,6 +7,8 @@ import (
 	"strings"
 	"log"
 	"github.com/crabkun/DazeClient/common"
+	"github.com/crabkun/DazeClient/proxy"
+	"encoding/json"
 )
 //单线程，只接受1个客户端
 
@@ -86,9 +88,25 @@ func StartControlServer(port string,password string){
 						goto UNKNOWN
 					}
 					switch arr[1] {
-					case "HTTP":
-					case "SOCKS5":
+					case "PORT":
+						common.SrvConf.LocalPort=arr[2]
+						if proxy.RestartServer()==nil{
+							ret="OK"
+						}else{
+							ret="FAILED"
+						}
+						goto RET
 					case "SERVER":
+						newcfg:=new(common.S_proxy)
+						if json.Unmarshal([]byte(arr[2]),newcfg)!=nil{
+							ret="FAILED"
+						}else{
+							newcfg.LocalPort=common.SrvConf.LocalPort
+							newcfg.Debug=common.SrvConf.Debug
+							common.SrvConf=newcfg
+							ret="OK"
+						}
+						goto RET
 					}
 			default:
 				goto UNKNOWN

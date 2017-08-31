@@ -328,19 +328,3 @@ func SocksUDPBridgeProxyToRemote(client *server.S_Client,UdpClient *net.UDPConn)
 	}
 
 }
-//func StartSocks5Proxy() (error){
-//	listener, err := net.Listen("tcp", "127.0.0.1:"+common.SrvConf.Socks5Port)
-//	if err != nil {
-//		log.Println("本地SOCKS5代理监听失败！原因： ", err)
-//		return err
-//	}
-//	log.Println("本地SOCKS5代理成功监听于",listener.Addr())
-//	for {
-//		conn, err := listener.Accept()
-//		if err != nil {
-//			continue
-//		}
-//		go handleConnection(conn)
-//	}
-//	return nil
-//}

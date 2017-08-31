@@ -80,7 +80,10 @@ func (client *S_Client)SafeRead(conn net.Conn,length int) ([]byte) {
 	for pos:=0;pos<length;{
 		n,err:=conn.Read(buf[pos:])
 		if err!=nil {
-			panic(nil)
+			if err,ok:=err.(net.Error);ok&&err.Timeout(){
+				panic("服务器与本机 或者 服务器与代理目标 之间连接超时！")
+			}
+				panic(nil)
 		}
 		pos+=n
 	}
@@ -146,6 +149,8 @@ func (client *S_Client)Login(){
 		panic("IP地址错误")
 	case -4	:
 		panic("代理服务器无法连接指定地址")
+	case -5:
+		panic("登录服务器失败："+authret.Data)
 	case 1:
 		client.Connected=true
 		//验证成功，去除验证超时
@@ -165,19 +170,18 @@ func CallProxyServer(ProxyUser net.Conn,cfg *common.S_proxy,host string,network 
 	var client *S_Client
 	defer func(){
 		if err := recover(); err != nil{
-			log.Println(fmt.Sprintf("目标([%s]%s)代理结束！(%s)",network,host,err))
+			log.Println(fmt.Sprintf("目标([%s]%s)代理提前结束，原因(%s)",network,host,err))
 			if client.RemoteServeFlag{
 				client.RemoteServerConn.Close()
-			}
-		}else{
-			if !client.Connected{
-				log.Println(fmt.Sprintf("目标([%s]%s)代理在握手期间被结束！可能是网络问题，也可能是伪装或者加密方式和参数不正确！",network,host))
 			}
 		}
 	}()
 	helper.DebugPrintln(fmt.Sprintf("调试信息：目标([%s]%s)代理开始",network,host))
 	//初始化client结构
 	client=PackNewUser(ProxyUser,nil,cfg)
+	if cfg.Address==""{
+		panic("连接配置不存在！")
+	}
 	client.TargetHost=host
 	client.Network=network
 	//加载加密模块
@@ -197,14 +201,13 @@ func CallProxyServer(ProxyUser net.Conn,cfg *common.S_proxy,host string,network 
 	//连接代理服务器
 	r,err:=net.Dial("tcp",cfg.Address+":"+cfg.Port)
 	if err!=nil{
-		panic("代理服务器连接失败！")
+		panic("代理服务器"+cfg.Address+":"+cfg.Port+"连接失败！")
 	}
 	client.RemoteServeFlag=true
 	client.RemoteServerConn=r
 
 	//设置验证超时时间
-	client.RemoteServerConn.SetDeadline(time.Now().Add(time.Second*3))
-
+	client.RemoteServerConn.SetDeadline(time.Now().Add(time.Second*5))
 	//开始伪装
 	obErr:=client.Ob.Action(client.RemoteServerConn,client.ObscureParam)
 	if obErr!=nil{

@@ -11,9 +11,6 @@ import (
 	"log"
 )
 
-//TODO
-//加密方式
-//完善控制部分
 func main(){
 	log.Println("DazeClient V3-201708301")
 	args:=go_args.ReadArgs()
@@ -33,9 +30,9 @@ func main(){
 		helper.ConfFile=path
 	}
 	helper.LoadConfig()
-	go proxy.StartProxy()
+	proxy.StartProxy()
 	idle:
 	for{
-		time.Sleep(time.Second*10)
+		time.Sleep(time.Second*3600)
 	}
 }

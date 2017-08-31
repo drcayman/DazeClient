@@ -33,4 +33,5 @@ func LoadConfig(){
 	fmt.Println("    本地HTTP代理监听端口：",common.SrvConf.LocalPort)
 	fmt.Println("    本地SOCKS5代理监听端口：",common.SrvConf.LocalPort)
 	fmt.Println("    调试模式：",common.SrvConf.Debug)
+	os.Stdout.Sync()
 }

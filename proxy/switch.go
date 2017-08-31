@@ -4,6 +4,7 @@ import(
 	"github.com/crabkun/DazeClient/common"
 	"log"
 )
+var ServerListener *net.Listener
 func StartProxy() (error){
 	listener, err := net.Listen("tcp", "127.0.0.1:"+common.SrvConf.LocalPort)
 	if err != nil {
@@ -11,13 +12,19 @@ func StartProxy() (error){
 		return err
 	}
 	log.Println("本地HTTP/SOCKS5代理成功监听于",listener.Addr())
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			continue
+	go func(){
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				if err,ok:=err.(net.Error);ok&&!err.Temporary(){
+					return
+				}
+				continue
+			}
+			go handleConnection(conn)
 		}
-		go handleConnection(conn)
-	}
+	}()
+	ServerListener=&listener
 	return nil
 }
 func handleConnection(conn net.Conn){
@@ -46,4 +53,10 @@ func (this *SwitchConn) Read(b []byte) (n int, err error){
 		return n+1,err
 	}
 	 return this.Conn.Read(b)
+}
+func RestartServer()(error){
+	if ServerListener!=nil{
+		(*ServerListener).Close()
+	}
+	return StartProxy()
 }
