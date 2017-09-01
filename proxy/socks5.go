@@ -9,7 +9,6 @@ import (
 	"github.com/crabkun/DazeClient/common"
 	"errors"
 	"encoding/json"
-	"runtime/debug"
 	"bytes"
 )
 // Convert a IP:Port string to a byte array in network order.
@@ -304,10 +303,7 @@ func SocksUDPBridgeRemoteToProxy(client *server.S_Client,UdpClient *net.UDPConn)
 }
 func SocksUDPBridgeProxyToRemote(client *server.S_Client,UdpClient *net.UDPConn){
 	defer func(){
-		err:=recover()
-		if err!=nil{
-			debug.PrintStack()
-		}
+		recover()
 		client.RemoteServerConn.Close()
 	}()
 	var UDP common.Json_UDP

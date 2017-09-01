@@ -11,6 +11,7 @@ import(
 	"github.com/crabkun/DazeClient/obscure"
 	"github.com/crabkun/DazeClient/encryption"
 	"log"
+	"bytes"
 )
 type S_Client struct {
 	//代理用户的套接字
@@ -32,6 +33,7 @@ type S_Client struct {
 	EReserved interface{}
 
 	UDPAddr *net.UDPAddr
+	Ready bool
 	//配置
 	*common.S_proxy
 
@@ -80,10 +82,14 @@ func (client *S_Client)SafeRead(conn net.Conn,length int) ([]byte) {
 	for pos:=0;pos<length;{
 		n,err:=conn.Read(buf[pos:])
 		if err!=nil {
-			if err,ok:=err.(net.Error);ok&&err.Timeout(){
-				panic("服务器与本机 或者 服务器与代理目标 之间连接超时！")
+			if client.Ready{
+				if client.Connected{
+					panic(nil) //正常断开
+				}
+				panic("服务器连接目标超时")
+			}else{
+				panic("本机与服务器在握手期间断开了连接！")
 			}
-				panic(nil)
 		}
 		pos+=n
 	}
@@ -95,8 +101,9 @@ func (client *S_Client)Write(data []byte)(n int, err error){
 		panic("数据长度不正确(1-65535)")
 	}
 	header:=[]byte{0xF1,byte(length%0x100),byte(length/0x100),0xF2}
-	client.SafeSend(client.Encode(header),client.RemoteServerConn)
-	client.SafeSend(client.Encode(data),client.RemoteServerConn)
+	buffer:=bytes.NewBuffer(client.Encode(header))
+	buffer.Write(client.Encode(data))
+	client.SafeSend(buffer.Bytes(),client.RemoteServerConn)
 	return length,nil
 }
 func (client *S_Client)SafeSend(data []byte,conn net.Conn){
@@ -104,7 +111,14 @@ func (client *S_Client)SafeSend(data []byte,conn net.Conn){
 	for pos:=0;pos<length;{
 		n,err:=conn.Write(data[pos:])
 		if err!=nil {
-			panic(nil)
+			if client.Ready{
+				if client.Connected{
+					panic(nil) //正常断开
+				}
+				panic("服务器连接目标超时")
+			}else{
+				panic("本机与服务器在握手期间断开了连接！")
+			}
 		}
 		pos+=n
 	}
@@ -129,6 +143,7 @@ func (client *S_Client)Login(){
 	client.Write(authinfoBuf)
 	//读取返回结果
 	authret:=new(common.Json_Ret)
+	read:
 	authretBuf:=client.Read()
 	err=json.Unmarshal(authretBuf,authret)
 	if err!=nil{
@@ -152,11 +167,18 @@ func (client *S_Client)Login(){
 	case -5:
 		panic("登录服务器失败："+authret.Data)
 	case 1:
+		client.Ready=true
 		client.Connected=true
 		//验证成功，去除验证超时
 		client.RemoteServerConn.SetDeadline(time.Time{})
 		client.TargetHostRealAddr=authret.Data
 		helper.DebugPrintln(fmt.Sprintf("调试信息：目标([%s]%s)代理建立成功",client.Network,client.TargetHost))
+	case 2:
+		client.Ready=true
+		helper.DebugPrintln(fmt.Sprintf("调试信息：服务器开始连接目标([%s]%s)",client.Network,client.TargetHost))
+		goto read
+	default:
+		panic("服务器返回的数据无法识别")
 	}
 }
 func PackNewUser(l net.Conn,r net.Conn,s *common.S_proxy) *S_Client{
