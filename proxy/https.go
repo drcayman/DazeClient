@@ -39,6 +39,7 @@ reconnect:
 		return
 	}
 	defer func(){
+		client.LocalDisconnect=true
 		client.RemoteServerConn.Close()
 	}()
 

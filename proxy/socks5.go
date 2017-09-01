@@ -59,6 +59,7 @@ func performConnect(backend string, frontconn net.Conn) {
 	}
 	backaddr := ProxyClient.TargetHostRealAddr
 	defer func() {
+		ProxyClient.LocalDisconnect=true
 		ProxyClient.RemoteServerConn.Close()
 	}()
 	IsIPv6:=IsIPv6Address(backaddr)
@@ -93,7 +94,7 @@ func SocksTCPBridgeRemoteToProxy(client *server.S_Client){
 func SocksTCPBridgeProxyToRemote(client *server.S_Client){
 	defer func(){
 		recover()
-		client.ProxyUserConn.Close()
+		client.RemoteServerConn.Close()
 	}()
 	buf:=make([]byte,65500)
 	var n int

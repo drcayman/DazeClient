@@ -28,6 +28,11 @@ func StartProxy() (error){
 	return nil
 }
 func handleConnection(conn net.Conn){
+	defer func(){
+		if err := recover(); err != nil{
+			conn.Close()
+		}
+	}()
 	testchar:=make([]byte,1)
 	_,err:=conn.Read(testchar)
 	if err!=nil{

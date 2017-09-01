@@ -33,7 +33,8 @@ type S_Client struct {
 	EReserved interface{}
 
 	UDPAddr *net.UDPAddr
-	Ready bool
+	LocalDisconnect bool
+	TryLogin bool
 	//配置
 	*common.S_proxy
 
@@ -82,14 +83,7 @@ func (client *S_Client)SafeRead(conn net.Conn,length int) ([]byte) {
 	for pos:=0;pos<length;{
 		n,err:=conn.Read(buf[pos:])
 		if err!=nil {
-			if client.Ready{
-				if client.Connected{
-					panic(nil) //正常断开
-				}
-				panic("服务器连接目标超时")
-			}else{
-				panic("本机与服务器在握手期间断开了连接！")
-			}
+			client.PanicError()
 		}
 		pos+=n
 	}
@@ -111,16 +105,18 @@ func (client *S_Client)SafeSend(data []byte,conn net.Conn){
 	for pos:=0;pos<length;{
 		n,err:=conn.Write(data[pos:])
 		if err!=nil {
-			if client.Ready{
-				if client.Connected{
-					panic(nil) //正常断开
-				}
-				panic("服务器连接目标超时")
-			}else{
-				panic("本机与服务器在握手期间断开了连接！")
-			}
+			client.PanicError()
 		}
 		pos+=n
+	}
+}
+func (client *S_Client)PanicError(){
+	switch {
+	case client.Connected:panic(nil)
+	case client.LocalDisconnect:panic(nil)
+	case client.TryLogin:panic("服务器连接目标超时")
+	default:
+		panic("服务器在握手期间断开了连接")
 	}
 }
 func (client *S_Client)Login(){
@@ -131,7 +127,7 @@ func (client *S_Client)Login(){
 	//开始登录
 	authinfo:=common.Json_Auth{
 		Username:client.Username,
-		Password:client.Password,
+		Password:util.GetDoubleMd5(client.Password),
 		Net:client.Network,
 		Host:client.TargetHost,
 		Spam:util.GetRandomString(256),
@@ -141,9 +137,9 @@ func (client *S_Client)Login(){
 		panic("生成登录数据失败"+err.Error())
 	}
 	client.Write(authinfoBuf)
+	client.TryLogin=true
 	//读取返回结果
 	authret:=new(common.Json_Ret)
-	read:
 	authretBuf:=client.Read()
 	err=json.Unmarshal(authretBuf,authret)
 	if err!=nil{
@@ -167,16 +163,11 @@ func (client *S_Client)Login(){
 	case -5:
 		panic("登录服务器失败："+authret.Data)
 	case 1:
-		client.Ready=true
 		client.Connected=true
 		//验证成功，去除验证超时
 		client.RemoteServerConn.SetDeadline(time.Time{})
 		client.TargetHostRealAddr=authret.Data
 		helper.DebugPrintln(fmt.Sprintf("调试信息：目标([%s]%s)代理建立成功",client.Network,client.TargetHost))
-	case 2:
-		client.Ready=true
-		helper.DebugPrintln(fmt.Sprintf("调试信息：服务器开始连接目标([%s]%s)",client.Network,client.TargetHost))
-		goto read
 	default:
 		panic("服务器返回的数据无法识别")
 	}
@@ -229,7 +220,7 @@ func CallProxyServer(ProxyUser net.Conn,cfg *common.S_proxy,host string,network 
 	client.RemoteServerConn=r
 
 	//设置验证超时时间
-	client.RemoteServerConn.SetDeadline(time.Now().Add(time.Second*5))
+	client.RemoteServerConn.SetDeadline(time.Now().Add(time.Second*10))
 	//开始伪装
 	obErr:=client.Ob.Action(client.RemoteServerConn,client.ObscureParam)
 	if obErr!=nil{
