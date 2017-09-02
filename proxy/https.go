@@ -8,6 +8,7 @@ import (
 	"github.com/crabkun/DazeClient/common"
 	"github.com/crabkun/DazeClient/server"
 	"regexp"
+	"github.com/crabkun/DazeClient/helper"
 )
 func HTTPProxyHandle(c net.Conn){
 	proto:="http"
@@ -19,6 +20,18 @@ func HTTPProxyHandle(c net.Conn){
 	r:=bufio.NewReader(c)
 	rq,err:=http.ReadRequest(r)
 	if err!=nil{
+		return
+	}
+	//处理PAC请求
+	switch rq.URL.Path {
+	case "/daze/pac/auto.pac":
+		buf,err:=helper.LoadPAC()
+		if err==nil{
+			c.Write(buf)
+		}
+		return
+	case "/daze/pac/all.pac":
+		c.Write(helper.ProxyAllPac)
 		return
 	}
 reconnect:

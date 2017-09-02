@@ -3,6 +3,7 @@ import(
 	"net"
 	"github.com/crabkun/DazeClient/common"
 	"log"
+	"github.com/crabkun/DazeClient/helper"
 )
 var ServerListener *net.Listener
 func StartProxy() (error){
@@ -12,6 +13,7 @@ func StartProxy() (error){
 		return err
 	}
 	log.Println("本地HTTP/SOCKS5代理成功监听于",listener.Addr())
+	helper.GenProxyAllPac()
 	go func(){
 		for {
 			conn, err := listener.Accept()
