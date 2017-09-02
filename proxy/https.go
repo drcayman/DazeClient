@@ -78,7 +78,7 @@ reconnect:
 
 	//IO桥：客户端到代理服务器
 	if rq=func(client *server.S_Client) *http.Request{
-		buf:=make([]byte,65500)
+		buf:=make([]byte,56789)
 		for{
 			n,err:=client.ProxyUserConn.Read(buf)
 			if err!=nil{

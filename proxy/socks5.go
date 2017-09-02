@@ -96,7 +96,7 @@ func SocksTCPBridgeProxyToRemote(client *server.S_Client){
 		recover()
 		client.RemoteServerConn.Close()
 	}()
-	buf:=make([]byte,65500)
+	buf:=make([]byte,56789)
 	var n int
 	var err error
 	for{
