@@ -9,6 +9,7 @@ import (
 	"github.com/crabkun/DazeClient/common"
 	"github.com/crabkun/DazeClient/proxy"
 	"encoding/json"
+	"github.com/crabkun/DazeClient/helper"
 )
 //单线程，只接受1个客户端
 
@@ -88,6 +89,10 @@ func StartControlServer(port string,password string){
 						goto UNKNOWN
 					}
 					switch arr[1] {
+					case "PAC":
+						helper.PacFile=arr[2]
+						ret="OK"
+						goto RET
 					case "PORT":
 						common.SrvConf.LocalPort=arr[2]
 						if proxy.RestartServer()==nil{

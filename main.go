@@ -29,6 +29,9 @@ func main(){
 	if path,flag:=args.GetArg("-conf");flag{
 		helper.ConfFile=path
 	}
+	if pac,flag:=args.GetArg("-pac");flag{
+		helper.PacFile=pac
+	}
 	helper.LoadConfig()
 	proxy.StartProxy()
 	idle:
