@@ -33,11 +33,11 @@ func (this *Http) Action(conn net.Conn , param string) (error){
 	req.Header.Add("Accept","*/*")
 	req.Write(conn)
 	reader:=bufio.NewReader(conn)
-	rsp,err:=http.ReadResponse(reader,nil)
+	_,err=http.ReadResponse(reader,nil)
 	if err!=nil{
 		return err
 	}
-	conn.Write([]byte(util.GetRandomString(int(rsp.ContentLength))))
+	req.Write(conn)
 	return nil
 }
 func SafeRead(conn net.Conn,length int) ([]byte,error) {
