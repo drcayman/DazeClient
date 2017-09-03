@@ -12,6 +12,7 @@ import (
 	"crypto/cipher"
 	"crypto/rsa"
 	"github.com/crabkun/DazeClient/util"
+	"io"
 )
 
 type KeypairAes struct {
@@ -23,14 +24,8 @@ type KeypairAesTmp struct {
 }
 func (this *KeypairAes)SafeRead(conn net.Conn,length int)([]byte,error){
 	buf:=make([]byte,length)
-	for pos:=0;pos<length;{
-		n,err:=conn.Read(buf[pos:])
-		if err!=nil {
-			return nil,err
-		}
-		pos+=n
-	}
-	return buf,nil
+	_,err:=io.ReadFull(conn,buf)
+	return buf,err
 }
 func (this *KeypairAes)InitUser(conn net.Conn,param string,client *interface{})(error){
 	var buf []byte

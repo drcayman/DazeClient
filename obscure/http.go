@@ -7,7 +7,6 @@ import (
 	"github.com/crabkun/DazeClient/util"
 	"bytes"
 	"bufio"
-	"errors"
 )
 
 type Http struct {
@@ -39,15 +38,4 @@ func (this *Http) Action(conn net.Conn , param string) (error){
 	}
 	req.Write(conn)
 	return nil
-}
-func SafeRead(conn net.Conn,length int) ([]byte,error) {
-	buf:=make([]byte,length)
-	for pos:=0;pos<length;{
-		n,err:=conn.Read(buf[pos:])
-		if err!=nil {
-			return nil,errors.New("根据Content-Length读取负载错误")
-		}
-		pos+=n
-	}
-	return buf,nil
 }

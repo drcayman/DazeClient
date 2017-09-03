@@ -12,6 +12,7 @@ import(
 	"github.com/crabkun/DazeClient/encryption"
 	"log"
 	"bytes"
+	"io"
 )
 type S_Client struct {
 	//代理用户的套接字
@@ -80,12 +81,9 @@ func (client *S_Client)Read() []byte {
 }
 func (client *S_Client)SafeRead(conn net.Conn,length int) ([]byte) {
 	buf:=make([]byte,length)
-	for pos:=0;pos<length;{
-		n,err:=conn.Read(buf[pos:])
-		if err!=nil {
-			client.PanicError()
-		}
-		pos+=n
+	_,err:=io.ReadFull(conn,buf)
+	if err!=nil {
+		client.PanicError()
 	}
 	return buf
 }
