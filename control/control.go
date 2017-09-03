@@ -10,6 +10,7 @@ import (
 	"github.com/crabkun/DazeClient/proxy"
 	"encoding/json"
 	"github.com/crabkun/DazeClient/helper"
+	"fmt"
 )
 //单线程，只接受1个客户端
 
@@ -51,6 +52,12 @@ func StartControlServer(port string,password string){
 						ret="AUTHERR"
 						goto RET
 					}
+				case "SPEED":
+					if !auth{
+						goto UNAUTH
+					}
+					ret=fmt.Sprintf("%d/%d",proxy.LastUpload,proxy.LastDownload)
+					goto RET
 				case "LOG":
 					if !auth{
 						goto UNAUTH
