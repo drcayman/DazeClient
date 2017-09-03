@@ -5,7 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"errors"
-	"github.com/crabkun/DazeProxy/util"
+	"github.com/crabkun/DazeClient/util"
 )
 
 type PskAesCfb struct {
