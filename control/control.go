@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"github.com/crabkun/DazeClient/helper"
 	"fmt"
+	"github.com/crabkun/DazeClient/dns"
 )
 //单线程，只接受1个客户端
 
@@ -57,6 +58,17 @@ func StartControlServer(port string,password string){
 						goto UNAUTH
 					}
 					ret=fmt.Sprintf("%d/%d",proxy.LastUpload,proxy.LastDownload)
+					goto RET
+				case "DNS":
+					if !dns.DNSOpenFlag{
+						if dns.StartDnsServer(){
+							ret="OK"
+						}else{
+							ret="FAILED"
+						}
+					}else{
+						ret="OK"
+					}
 					goto RET
 				case "LOG":
 					if !auth{
