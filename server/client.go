@@ -13,6 +13,7 @@ import(
 	"log"
 	"bytes"
 	"io"
+	"strings"
 )
 type S_Client struct {
 	//代理用户的套接字
@@ -187,6 +188,9 @@ func CallProxyServer(ProxyUser net.Conn,cfg *common.S_proxy,host string,network 
 			}
 		}
 	}()
+	if strings.Index(host,"127.0.0.1:")!=-1{
+		return nil
+	}
 	helper.DebugPrintln(fmt.Sprintf("调试信息：目标([%s]%s)代理开始",network,host))
 	//初始化client结构
 	client=PackNewUser(ProxyUser,nil,cfg)
