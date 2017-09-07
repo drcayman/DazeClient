@@ -31,7 +31,13 @@ func GetEncryption(name string) (regfunc,bool){
 	d,flag:=encryptionMap[name]
 	return d,flag
 }
-
+func GetEncryptionList()[]string{
+	list:=make([]string,0)
+	for k,_:=range encryptionMap{
+		list=append(list, k)
+	}
+	return list
+}
 func init(){
 	encryptionMap=make(map[string]regfunc)
 

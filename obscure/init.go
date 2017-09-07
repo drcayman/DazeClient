@@ -18,7 +18,13 @@ func GetObscure(name string) (regfunc,bool){
 	d,flag:=obscureMap[name]
 	return d,flag
 }
-
+func GetObscureList()[]string{
+	list:=make([]string,0)
+	for k,_:=range obscureMap{
+		list=append(list, k)
+	}
+	return list
+}
 func init(){
 	obscureMap=make(map[string]regfunc)
 	obscureMap["none"]=func()(Action){

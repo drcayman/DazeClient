@@ -4,7 +4,6 @@ import (
 	"time"
 	"github.com/crabkun/DazeClient/proxy"
 	"github.com/crabkun/go-args"
-	"os"
 	"github.com/crabkun/DazeClient/control"
 	"github.com/crabkun/DazeClient/helper"
 
@@ -16,14 +15,9 @@ func main(){
 	log.Println("DazeClient V3-201709031")
 	args:=go_args.ReadArgs()
 	//判断是否开启被控模式
-	ControlPort,ControlFlag:=args.GetArg("-control-port")
+	ControlAddress,ControlFlag:=args.GetArg("-control-address")
 	if ControlFlag{
-		ControlPass,flag:=args.GetArg("-control-password")
-		if !flag || ControlPass==""{
-			println("指定了控制端口但未指定控制密码！")
-			os.Exit(-1)
-		}
-		go control.StartControlServer(ControlPort,ControlPass)
+		go control.StartControlServer(ControlAddress)
 		ShowNetSpeed=false
 		goto idle
 	}
