@@ -49,7 +49,7 @@ DazeClient内置控制端口，运行后将监听某一端口，往这个端口�
 
 ## 相关教程（持续更新中）
 [客户端配置文件详解](https://github.com/crabkun/DazeClient/wiki/%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%AF%A6%E8%A7%A3)
-[各加密方式的详细解释与区别](https://github.com/crabkun/DazeProxy/wiki/%E5%90%84%E5%8A%A0%E5%AF%86%E6%96%B9%E5%BC%8F%E7%9A%84%E8%AF%A6%E7%BB%86%E8%A7%A3%E9%87%8A%E4%B8%8E%E5%8C%BA%E5%88%AB)  
+[各加密方式的详细解释与区别](https://github.com/crabkun/DazeProxy/wiki/%E5%90%84%E5%8A%A0%E5%AF%86%E6%96%B9%E5%BC%8F%E7%9A%84%E8%AF%A6%E7%BB%86%E8%A7%A3%E9%87%8A%E4%B8%8E%E5%8C%BA%E5%88%AB)
 [各伪装方式的详细解释与区别](https://github.com/crabkun/DazeProxy/wiki/%E5%90%84%E4%BC%AA%E8%A3%85%E6%96%B9%E5%BC%8F%E7%9A%84%E8%AF%A6%E7%BB%86%E8%A7%A3%E9%87%8A%E4%B8%8E%E5%8C%BA%E5%88%AB)
 [客户端加密与伪装的开发文档](https://github.com/crabkun/DazeClient/wiki/%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%8A%A0%E5%AF%86%E4%B8%8E%E4%BC%AA%E8%A3%85%E7%9A%84%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3)
 客户端控制接口的命令详解
