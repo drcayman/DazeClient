@@ -32,5 +32,5 @@ func (this *HttpGet) Action(conn net.Conn , param string) (error){
 	return nil
 }
 func init(){
-	RegisterObscure("http",new(HttpGet))
+	RegisterObscure("http_get",new(HttpGet))
 }
