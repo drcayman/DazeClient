@@ -1,4 +1,4 @@
-# DazeClient
+# DazeClient（客户端）
 
 一个由Golang编写的免费、多功能、高性能代理DazeProxy的客户端。
 
@@ -21,7 +21,7 @@ DazeClient属于Daze代理套件。Daze代理套件包括：
 
 ## 对于普通用户
 
-没什么特别功能，只是用来连接DazeProxy服务器。  
+用来连接DazeProxy服务器,然后作为代理使用。
 后期更新TAP虚拟网卡之后，可以做到真正的全局代理，支持TCP、UDP网游。
 
 ## 对于开发者
@@ -32,11 +32,13 @@ DazeClient内置控制端口，运行后将监听某一端口，往这个端口�
 
 ## 加密和伪装
 
-目前Daze代理套件自带的伪装方式有  
+目前Daze代理套件自带的伪装方式有
+- none：无伪装
 - http：可伪装成HTTP GET或POST连接  
 - tls_handshake：可伪装成TLS1.2连接  
 
-目前Daze代理套件自带的加密方式有  
+目前Daze代理套件自带的加密方式有
+- none：无加密
 - keypair-rsa：服务端生成RSA密钥并发送公钥与客户端协商aes密钥，然后进行aes128位cfb模式加密  
 - psk-aes-128-cfb：客户端与服务端利用约定好的预共享密钥进行aes128位cfb模式加密  
 - psk-aes-256-cfb：客户端与服务端利用约定好的预共享密钥进行aes256位cfb模式加密  
@@ -46,11 +48,11 @@ DazeClient内置控制端口，运行后将监听某一端口，往这个端口�
 由于某些不可描述的原因，暂停下载一段时间
 
 ## 相关教程（持续更新中）
-服务端配置文件详解  
+[客户端配置文件详解](https://github.com/crabkun/DazeClient/wiki/%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%AF%A6%E8%A7%A3)
 [各加密方式的详细解释与区别](https://github.com/crabkun/DazeProxy/wiki/%E5%90%84%E5%8A%A0%E5%AF%86%E6%96%B9%E5%BC%8F%E7%9A%84%E8%AF%A6%E7%BB%86%E8%A7%A3%E9%87%8A%E4%B8%8E%E5%8C%BA%E5%88%AB)  
-[各伪装方式的详细解释与区别](https://github.com/crabkun/DazeProxy/wiki/%E5%90%84%E4%BC%AA%E8%A3%85%E6%96%B9%E5%BC%8F%E7%9A%84%E8%AF%A6%E7%BB%86%E8%A7%A3%E9%87%8A%E4%B8%8E%E5%8C%BA%E5%88%AB)    
-客户端加密与伪装的开发文档  
-客户端控制接口的命令详解  
+[各伪装方式的详细解释与区别](https://github.com/crabkun/DazeProxy/wiki/%E5%90%84%E4%BC%AA%E8%A3%85%E6%96%B9%E5%BC%8F%E7%9A%84%E8%AF%A6%E7%BB%86%E8%A7%A3%E9%87%8A%E4%B8%8E%E5%8C%BA%E5%88%AB)
+[客户端加密与伪装的开发文档](https://github.com/crabkun/DazeClient/wiki/%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%8A%A0%E5%AF%86%E4%B8%8E%E4%BC%AA%E8%A3%85%E7%9A%84%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3)
+客户端控制接口的命令详解
 [各种常见的问题与答案](https://github.com/crabkun/DazeProxy/wiki/%E5%90%84%E7%A7%8D%E5%B8%B8%E8%A7%81%E7%9A%84%E9%97%AE%E9%A2%98%E4%B8%8E%E7%AD%94%E6%A1%88)
 
 ## 感谢（Thanks）
@@ -58,7 +60,7 @@ DazeClient内置控制端口，运行后将监听某一端口，往这个端口�
 - Xorm：[https://github.com/go-xorm/xorm](https://github.com/go-xorm/xorm)  
 - Go-MySQL-Driver：[https://github.com/go-sql-driver/mysql](https://github.com/go-sql-driver/mysql)  
 - go-sqlite3：[https://github.com/mattn/go-sqlite3](https://github.com/mattn/go-sqlite3)  
-- socks5：[https://github.com/physacco/socks5](https://github.com/physacco/socks5)  
+- socks5：[https://github.com/physacco/socks5](https://github.com/physacco/socks5)
 - gotun2socks：[https://github.com/yinghuocho/gotun2socks](https://github.com/yinghuocho/gotun2socks)
 ## 开源协议
 BSD 3-Clause License
