@@ -1,45 +1,45 @@
 package obscure
 
 import (
-	"strings"
 	"net"
+	"reflect"
+	"errors"
 )
-type Action interface {
+type ObscureAction interface {
 	//Action，用户连接后进行的伪装操作
 	//conn：用户的连接套接字
 	//param：配置文件里面填写的ObscureParam
 	Action(conn net.Conn,	param string)(error)
 }
-type regfunc func()(Action)
-var obscureMap map[string]regfunc
+var obscureMap map[string]reflect.Type
 
-func GetObscure(name string) (regfunc,bool){
-	name=strings.ToLower(name)
-	d,flag:=obscureMap[name]
-	return d,flag
+func GetObscure(name string)(ObscureAction,bool){
+	if obscureMap==nil{
+		goto FAILED
+	}
+	if v,ok:=obscureMap[name];ok{
+		return reflect.New(v).Interface().(ObscureAction),true
+	}
+	FAILED:
+	return nil,false
 }
+
 func GetObscureList()[]string{
 	list:=make([]string,0)
-	for k,_:=range obscureMap{
+	for k:=range obscureMap{
 		list=append(list, k)
 	}
 	return list
 }
-func init(){
-	obscureMap=make(map[string]regfunc)
-	obscureMap["none"]=func()(Action){
-		return Action(&none{})
+func RegisterObscure(name string,action ObscureAction)(error){
+	if obscureMap==nil{
+		obscureMap=make(map[string]reflect.Type)
 	}
-	obscureMap["tls_handshake"]=func()(Action){
-		return Action(&TlsHandshake{})
+	if _,ok:=obscureMap[name];ok{
+		return errors.New("exist")
 	}
-	obscureMap["http_get"]=func()(Action){
-		return Action(&Http{"GET"})
-	}
-	obscureMap["http"]=func()(Action){
-		return Action(&Http{"GET"})
-	}
-	obscureMap["http_post"]=func()(Action){
-		return Action(&Http{"POST"})
-	}
+	Ptype:=reflect.ValueOf(action)
+	STtype:=reflect.Indirect(Ptype).Type()
+	obscureMap[name]=STtype
+	return nil
 }

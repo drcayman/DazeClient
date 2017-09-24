@@ -30,7 +30,7 @@ type S_Client struct {
 	TargetHostRealAddr string
 
 	//加密与伪装的接口
-	Ob obscure.Action
+	Ob obscure.ObscureAction
 	E encryption.Action
 	EReserved interface{}
 
@@ -211,7 +211,7 @@ func CallProxyServer(ProxyUser net.Conn,cfg *common.S_proxy,host string,network 
 	if !ExistFlag{
 		panic("伪装方式"+client.Obscure+"不存在")
 	}
-	client.Ob=Ob()
+	client.Ob=Ob
 
 	//连接代理服务器
 	r,err:=net.Dial("tcp",cfg.Address+":"+cfg.Port)

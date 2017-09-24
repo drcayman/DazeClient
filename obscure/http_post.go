@@ -9,13 +9,18 @@ import (
 	"bufio"
 )
 
-type HttpGet struct {
+type HttpPost struct {
 }
 
-func (this *HttpGet) Action(conn net.Conn , param string) (error){
+func (this *HttpPost) Action(conn net.Conn , param string) (error){
 	var err error
 	body:=make([]byte,0)
-	req,err:=http.NewRequest("GET","http://"+param+"/"+util.GetRandomString(rand.Intn(10))+".php",bytes.NewReader(body))
+	bodystr:=util.GetRandomString(rand.Intn(10))+"="+
+	util.GetRandomString(rand.Intn(512))+"&"+
+	util.GetRandomString(rand.Intn(10))+"="+
+	util.GetRandomString(rand.Intn(512))
+	body=[]byte(bodystr)
+	req,err:=http.NewRequest("POST","http://"+param+"/"+util.GetRandomString(rand.Intn(10))+".php",bytes.NewReader(body))
 	if err!=nil{
 		return err
 	}
@@ -32,5 +37,5 @@ func (this *HttpGet) Action(conn net.Conn , param string) (error){
 	return nil
 }
 func init(){
-	RegisterObscure("http",new(HttpGet))
+	RegisterObscure("http_post",new(HttpPost))
 }
