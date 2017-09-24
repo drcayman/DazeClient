@@ -16,18 +16,16 @@ import (
 )
 
 type KeypairAes struct {
-	reserved string
-}
-type KeypairAesTmp struct {
 	Key []byte
 	Block cipher.Block
 }
+
 func (this *KeypairAes)SafeRead(conn net.Conn,length int)([]byte,error){
 	buf:=make([]byte,length)
 	_,err:=io.ReadFull(conn,buf)
 	return buf,err
 }
-func (this *KeypairAes)InitUser(conn net.Conn,param string,client *interface{})(error){
+func (this *KeypairAes)InitUser(conn net.Conn,param string)(error){
 	var buf []byte
 	var err error
 	buf,err=this.SafeRead(conn,1)
@@ -72,32 +70,22 @@ func (this *KeypairAes)InitUser(conn net.Conn,param string,client *interface{})(
 		return errors.New("无法利用服务器返回的公钥加密！原因："+err.Error())
 	}
 	conn.Write(finallyAesKey)
-	t:=KeypairAesTmp{}
-	t.Block,err=aes.NewCipher(newAesKey)
+	this.Block,err=aes.NewCipher(newAesKey)
 	if err!=nil{
 		return err
 	}
-	t.Key=newAesKey[:t.Block.BlockSize()]
-	*client=t
+	this.Key=newAesKey[:this.Block.BlockSize()]
 	return nil
 }
-func (this *KeypairAes)Encrypt(client *interface{},data []byte)([]byte,error){
-	t,flag:=(*client).(KeypairAesTmp)
-	if !flag{
-		return nil,errors.New("unknown error")
-	}
+func (this *KeypairAes)Encrypt(data []byte)([]byte,error){
 	dst:=make([]byte,len(data))
-	Crypter:=cipher.NewCFBEncrypter(t.Block,t.Key)
+	Crypter:=cipher.NewCFBEncrypter(this.Block,this.Key)
 	Crypter.XORKeyStream(dst,data)
 	return dst,nil
 }
-func (this *KeypairAes)Decrypt(client *interface{},data []byte)([]byte,error){
-	t,flag:=(*client).(KeypairAesTmp)
-	if !flag{
-		return nil,errors.New("unknown error")
-	}
+func (this *KeypairAes)Decrypt(data []byte)([]byte,error){
 	dst:=make([]byte,len(data))
-	Decrypter:=cipher.NewCFBDecrypter(t.Block,t.Key)
+	Decrypter:=cipher.NewCFBDecrypter(this.Block,this.Key)
 	Decrypter.XORKeyStream(dst,data)
 	return dst,nil
 }
@@ -112,4 +100,7 @@ func (this *KeypairAes) GenBytes(bytesLen int) ([]byte){
 	buf:=make([]byte,bytesLen)
 	rand.Read(buf)
 	return buf
+}
+func init(){
+	RegisterEncryption("keypair-aes",new(KeypairAes))
 }

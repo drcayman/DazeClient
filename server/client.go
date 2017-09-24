@@ -31,8 +31,7 @@ type S_Client struct {
 
 	//加密与伪装的接口
 	Ob obscure.ObscureAction
-	E encryption.Action
-	EReserved interface{}
+	E encryption.EncryptionAction
 
 	UDPAddr *net.UDPAddr
 	LocalDisconnect bool
@@ -42,14 +41,14 @@ type S_Client struct {
 
 }
 func (client *S_Client)Decode(data []byte) []byte{
-	buf,err:=client.E.Decrypt(&client.EReserved,data)
+	buf,err:=client.E.Decrypt(data)
 	if err!=nil{
 		panic(err.Error())
 	}
 	return buf
 }
 func (client *S_Client)Encode(data []byte) []byte{
-	buf,err:=client.E.Encrypt(&client.EReserved,data)
+	buf,err:=client.E.Encrypt(data)
 	if err!=nil{
 		panic(err.Error())
 	}
@@ -204,7 +203,7 @@ func CallProxyServer(ProxyUser net.Conn,cfg *common.S_proxy,host string,network 
 	if !ExistFlag{
 		panic("加密方式"+client.Encryption+"不存在")
 	}
-	client.E=E()
+	client.E=E
 
 	//加载伪装模块
 	Ob,ExistFlag:=obscure.GetObscure(client.Obscure)
@@ -229,7 +228,7 @@ func CallProxyServer(ProxyUser net.Conn,cfg *common.S_proxy,host string,network 
 		panic("伪装时出现错误："+obErr.Error())
 	}
 	//为初始化加密方式
-	eErr:=client.E.InitUser(client.RemoteServerConn,client.EncryptionParam,&client.EReserved)
+	eErr:=client.E.InitUser(client.RemoteServerConn,client.EncryptionParam)
 	if eErr!=nil{
 		panic("为用户初始化加密方式时出现错误："+eErr.Error())
 	}
