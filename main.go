@@ -12,7 +12,7 @@ import (
 
 func main(){
 	var ShowNetSpeed bool=true
-	log.Println("DazeClient V3-201709031")
+	log.Println("DazeClient V3-201709251")
 	args:=go_args.ReadArgs()
 	//判断是否开启被控模式
 	ControlAddress,ControlFlag:=args.GetArg("-control-address")
