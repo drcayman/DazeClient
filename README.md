@@ -45,7 +45,7 @@ DazeClient内置受控功能，可以指定控制地址，DazeClient运行后自
 - psk-rc4-md5：客户端与服务端利用约定好的预共享密钥进行rc4加密  
 
 ## 哪里下载？
-由于某些不可描述的原因，暂停下载一段时间
+[releases](https://github.com/crabkun/DazeClient/releases)
 
 ## 相关教程（持续更新中）
 [客户端配置文件详解](https://github.com/crabkun/DazeClient/wiki/%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%AF%A6%E8%A7%A3)
