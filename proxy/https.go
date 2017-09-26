@@ -24,7 +24,7 @@ func HTTPProxyHandle(c net.Conn){
 		return
 	}
 	//处理PAC请求
-	if strings.Index(rq.Host,"127.0.0.1")!=-1{
+	if strings.Contains(rq.Host,"127.0.0.1"){
 		switch rq.URL.Path {
 			case "/daze/pac/auto.pac":
 				buf,err:=helper.LoadPAC()

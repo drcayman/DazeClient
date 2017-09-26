@@ -17,10 +17,7 @@ func (this *PskRc4Md5)InitUser(conn net.Conn,param string)(error){
 	}
 	var CipherErr error=nil
 	this.Cipher,CipherErr=rc4.NewCipher(key)
-	if CipherErr!=nil{
-		return CipherErr
-	}
-	return nil
+	return CipherErr
 }
 func (this *PskRc4Md5)Encrypt(data []byte)([]byte,error){
 	dst:=make([]byte,len(data))
