@@ -3,16 +3,13 @@ package encryption
 import (
 	"net"
 	"crypto/rand"
-	"crypto/x509"
 	"strings"
 	"errors"
-	"time"
-	"strconv"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rsa"
-	"github.com/crabkun/DazeClient/util"
 	"io"
+	"math/big"
 )
 
 type KeypairAes struct {
@@ -36,36 +33,12 @@ func (this *KeypairAes)InitUser(conn net.Conn,param string)(error){
 	if err!=nil{
 		return err
 	}
-	utc:=time.Now().UTC()
-	s,err:=time.ParseDuration(utc.Format("-15h04m05s"))
-	if err!=nil{
-		return err
-	}
-	utc=utc.Add(s)
-	UTCunix:=utc.Unix()
-	UTCunixStr:=strconv.FormatInt(UTCunix,10)
-	UTCunixStrPadded:=this.StrPadding(UTCunixStr)
-	aesKey,err:=util.Gen16Md5Key(UTCunixStrPadded)
-	if err!=nil{
-		return err
-	}
-	Cipher,err:=aes.NewCipher(aesKey)
-	if err!=nil{
-		return err
-	}
-	enc:=cipher.NewCFBDecrypter(Cipher,aesKey[:Cipher.BlockSize()])
-	keyDecoded:=make([]byte,len(buf))
-	enc.XORKeyStream(keyDecoded,buf)
-	pub,err:=x509.ParsePKIXPublicKey(keyDecoded)
+	pub:=&rsa.PublicKey{N:big.NewInt(0).SetBytes(buf),E:65537}
 	if err!=nil{
 		return errors.New("无法解析服务器发送过来的公钥！原因："+err.Error())
 	}
-	publicKey,flag:=pub.(*rsa.PublicKey)
-	if !flag{
-		return errors.New("无法解析服务器发送过来的公钥！")
-	}
 	newAesKey:=this.GenBytes(16)
-	finallyAesKey,err:=rsa.EncryptPKCS1v15(rand.Reader,publicKey,newAesKey)
+	finallyAesKey,err:=rsa.EncryptPKCS1v15(rand.Reader,pub,newAesKey)
 	if err!=nil{
 		return errors.New("无法利用服务器返回的公钥加密！原因："+err.Error())
 	}
